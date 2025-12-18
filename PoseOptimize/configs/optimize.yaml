@@ -1,0 +1,31 @@
+device:       cuda:0
+scene_root:   '../ClutteredScenes/scene_datasets/scenes'
+scene_type:   
+scene_id:     
+
+ibs_root:     'data/gt_ibs'
+obj_root:     '../ClutteredScenes/assets/graspnet'
+log_root:     'logs'
+traj_root:    'trajectories'
+final_pose_root: 'data/optimized_pose'
+
+hand_root:    '../../GraspGeneration/assets/gripper'
+hand_name:    'shadow'
+gt_hand_type: 'shadow_2finger'
+
+num_particles:    50
+init_rand_scale:  1.0
+iters:            200
+
+
+learning_rate:    0.01
+lr_decay:         0.7
+decay_every:      50
+
+theta:            10.0
+
+save_trajectory:  0
+save_final_pose:  1
+
+test_num:         32
+batch_size:       32

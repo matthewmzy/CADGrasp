@@ -1,0 +1,18 @@
+seed:     543
+device:   cuda:0
+hand_name: 'shadow'
+
+scene_type: 8
+scene_id:   0
+
+scene_root: 'data/scenes'
+# poses_root: 'data/final_poses'
+poses_root: '/home/matthew_zy/Documents/summer/dipgrasp/experiments/exp5_6grav/sha2sha'
+gt_root:    '/home/matthew_zy/Documents/summer/dipgrasp/experiments/exp5_6grav/succ'
+save_root:  'data/isaac_results'
+obj_assets_root: 'assets/objects/graspnet'
+hand_assets_root: 'hand_assets/urdf'
+hand_assets_meta_path: 'hand_assets/hand_assets_meta.json'
+
+test_gt:    0
+static_vis: 0

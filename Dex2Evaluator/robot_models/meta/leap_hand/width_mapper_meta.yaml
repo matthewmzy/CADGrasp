@@ -1,0 +1,28 @@
+canonical_pose:
+  translation: [-0.15, 0.045, -0.02]
+  rotation: [[0, 0, -1], [1, 0, 0], [0, -1, 0]]
+  qpos:
+    j0: 0.0
+    j1: 1.57
+    j2: 0.0
+    j3: 0.0
+    j4: 0.0
+    j5: 1.57
+    j6: 0.0
+    j7: 0.0
+    j8: 0.0
+    j9: 1.57
+    j10: 0.0
+    j11: 0.0
+    j12: 1.57
+    j13: 0.0
+    j14: 0.0
+    j15: 0.0
+
+fingertip_link:
+  thumb: thumb_fingertip
+  others: [fingertip, fingertip_2, fingertip_3]
+
+fingertip_normal:
+  thumb: [-1, 0, 0]
+  others: [[-1, 0, 0], [-1, 0, 0], [-1, 0, 0]]

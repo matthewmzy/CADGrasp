@@ -1,0 +1,11 @@
+pose_data_path:   IBSGrasp/graspdata
+scene_cfg_path:   IBSGrasp/conf/scene.yaml
+ibs_save_path:    IBSGrasp/ibsdata
+
+scene_id:         55
+device:           cuda:0
+pc2vox:           1
+vis:              10
+max_ibs_per_scene: 5000
+
+make_picture:     True

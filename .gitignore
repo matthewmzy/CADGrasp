@@ -1,8 +1,45 @@
-__pycache__
-data
-experiments
-.vscode
-wandb
-DexGraspNet2.0-ckpts
-pretrained
-tmp
+# Third party & build
+/thirdparty
+__pycache__/
+*.pyc
+*.pyo
+*.so
+
+# Large files & installers
+*.ckpt
+*.tar.bz2
+*.run
+Miniconda3-*.sh
+
+# Data directories (download separately)
+/data/
+/outputs/
+/results/
+/logs/
+/experiments/
+
+# CADGrasp large data (download separately)
+IBSGrasp/ibsdata/
+IBSGrasp/scene_valid_ids/
+IBSGrasp/runs/
+LASDiffusion/results/
+LASDiffusion/outputs/
+PoseOptimize/hand_assets/
+
+# Temporary files
+*.html
+*.png
+test_file
+a.py
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+
+# Project specific - intermediate outputs
+/send_to_yaoge/
+/visualize/
+/info/

@@ -1,0 +1,18 @@
+robot_name:       leap_hand
+urdf_path:        robot_models/urdf/leap_hand_simplified.urdf
+meta_path:        robot_models/meta/leap_hand/meta.yaml
+
+camera:           realsense
+table_size:       [0.6,0.6,0]
+output_path:      
+with_graspness:   False
+
+scene_id:         0
+device:           cuda:0
+
+visualize:        1
+seed:             2
+grasp_num:        0
+num_samples:      4096
+
+load_gt_ibs:      False

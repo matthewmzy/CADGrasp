@@ -1,0 +1,6 @@
+adjacency_pairs:
+  - [hand_base_link, thumb_pip]
+  - [hand_base_link, thumb_dip]
+  - [mcp_joint, dip]
+  - [mcp_joint_2, dip_2]
+  - [mcp_joint_3, dip_3]
