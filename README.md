@@ -1,22 +1,22 @@
-# DexGraspNet 2.0
-Official code for "**DexGraspNet 2.0: Learning Generative Dexterous Grasping in Large-scale Synthetic Cluttered Scenes**" *(CoRL 2024)*
+# CADGraspNet 2.0
+Official code for "**CADGrasp: Learning Contact and Collision Aware General Dexterous Grasping in Cluttered Scenes **" *(NeurIPS 2025)*
 
-[Project Page](https://pku-epic.github.io/DexGraspNet2.0/) | [Paper](https://arxiv.org/pdf/2410.23004)
+[Project Page](https://https://cadgrasp.github.io/) | [Paper](https://arxiv.org/pdf/2410.23004)
 
 ![image](./figure/teaser.png)
 
 ## Environment
 
-- Ubuntu 20.04
-- CUDA 11.7 (If you use other CUDA versions, the versions of torch and pytorch3d and the environment variable CUDA_HOME need to be changed.)
-- sudo (Only needed if you don't have libopenblas-dev installed)
+- Ubuntu 22.04
+- CUDA 12.1
+
 
 ```bash
 
-conda create -n DexGrasp python=3.8
-conda activate DexGrasp
+conda create -n CADGrasp python=3.8
+conda activate CADGrasp
 
-conda install pytorch==2.0.1 torchvision==0.15.2 torchaudio==2.0.2 pytorch-cuda=11.7 -c pytorch -c nvidia
+pip install torch==2.1.0 torchvision==0.16.0 torchaudio==2.1.0 --index-url https://download.pytorch.org/whl/cu121
 
 wget https://mirrors.tuna.tsinghua.edu.cn/anaconda/cloud/pytorch3d/linux-64/pytorch3d-0.7.5-py38_cu117_pyt201.tar.bz2
 conda install -y --use-local ./pytorch3d-0.7.5-py38_cu117_pyt201.tar.bz2
@@ -133,34 +133,23 @@ python src/preprocess/compute_network_input_all.py --dataset graspnet --scene_id
 python src/preprocess/compute_network_input_all.py --dataset acronym 
 ```
 
+```bash
+bash IBSProcessing/scripts/evaluate_grasps.py
+bash IBSProcessing/scripts/batch_cal_ibs.py
+bash IBSProcessing/scripts/annotate_ibs_for_view.py
+```
+
 ## Training
 
 ```bash
-# ours gripper
-python src/train.py --exp_name exp_gripper_ours --yaml configs/network/train_gripper_ours.yaml
-
-# ours dexterous hand
-python src/train.py --exp_name exp_dex_ours --yaml configs/network/train_dex_ours.yaml
-
-# isagrasp with graspness
-python src/train.py --exp_name exp_dex_isagrasp --yaml configs/network/train_dex_isagrasp.yaml
-
-# graspcvae with graspness
-python src/train.py --exp_name exp_dex_grasptta --yaml configs/network/train_dex_grasptta.yaml
+cd LASDiffusion
+bash train.sh
 ```
 
 ## Evaluation
 
 ```bash
-# gripper evaluation
-python src/eval/eval_gripper.py --ckpt experiments/gripper_ours/ckpt/ckpt_50000.pth --split test_seen
-python src/eval/eval_gripper.py --ckpt experiments/gripper_ours/ckpt/ckpt_50000.pth --split test_similar
-python src/eval/eval_gripper.py --ckpt experiments/gripper_ours/ckpt/ckpt_50000.pth --split test_novel
-```
-
-```bash
-# predictiong dexterous grasping poses
-python src/eval/predict_dexterous_all_cates.py --ckpt experiments/dex_ours/ckpt/ckpt_50000.pth 
+python src/eval/predict_dexterous_all_cates.py --ckpt experiments/cad/ckpt/ckpt_50000.pth 
 ```
 
 ```bash
@@ -170,28 +159,18 @@ python src/eval/evaluate_dexterous_all_cates.py # fill the ckpt path in ckpt_pat
 
 ```bash
 # print the dexterous grasping's simulation result
-python src/eval/print_dexterous_result.py --ckpt experiments/dex_ours/ckpt/ckpt_50000.pth
-```
-
-## Visualization
-
-visualize graspness, dexterous grasps, and their corresponding grasp points from the dataset
-```bash
-python tests/visualize_scene.py
-python tests/visualize_dex_grasp.py
-python tests/visualize_gripper_pred.py --ckpt_path=experiments/gripper_ours/ckpt/ckpt_50000.pth
-python tests/visualize_dex_pred.py --ckpt_path=experiments/dex_ours/ckpt/ckpt_50000.pth
+python src/eval/print_dexterous_result.py --ckpt experiments/cad/ckpt/ckpt_50000.pth
 ```
 
 
 ## Citation
 
 ```
-@inproceedings{zhang2024dexgraspnet,
-  title={DexGraspNet 2.0: Learning Generative Dexterous Grasping in Large-scale Synthetic Cluttered Scenes},
-  author={Zhang, Jialiang and Liu, Haoran and Li, Danshi and Yu, XinQiang and Geng, Haoran and Ding, Yufei and Chen, Jiayi and Wang, He},
-  booktitle={8th Annual Conference on Robot Learning},
-  year={2024}
+@inproceedings{zhang2024CADGraspnet,
+  title={CADGrasp: Learning Contact and Collision Aware General Dexterous Grasping in Cluttered Scenes},
+  author={Zhang, Jiyao and Ma, Zhiyuan and Wu, Tianhao and Chen, Zeyuan and Dong, Hao},
+  booktitle={39th Annual Conference on Neural Information Processing Systems},
+  year={2025}
 }
 ```
 
