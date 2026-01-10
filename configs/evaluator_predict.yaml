@@ -24,7 +24,7 @@ stage3:
   filt_or_not: 1
   cone_viz_num: 0
   cone_mu: 1
-  hand_asset_path: "PoseOptimize/hand_assets"
+  hand_asset_path: "robot_models/meta/leap_hand"
   
   max_iters: 100
   lr: 5e-3

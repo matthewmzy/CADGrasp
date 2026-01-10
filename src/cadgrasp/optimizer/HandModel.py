@@ -20,7 +20,7 @@ import pytorch3d.ops
 from termcolor import cprint
 
 
-def get_handmodel(robot, batch_size, device, hand_scale=1., use_collision=False, urdf_assets_meta_path="PoseOptimize/hand_assets/hand_assets_meta.json", sample_density=4e6):
+def get_handmodel(robot, batch_size, device, hand_scale=1., use_collision=False, urdf_assets_meta_path="robot_models/meta/leap_hand/hand_assets_meta.json", sample_density=4e6):
     urdf_assets_meta = json.load(open(urdf_assets_meta_path))
     hand_model = HandModel(robot, urdf_assets_meta, batch_size=batch_size, device=device, scale=hand_scale, use_collision=use_collision, sample_density=sample_density)
     return hand_model
@@ -108,6 +108,9 @@ class HandModel:
             for i in range(len(components)):
                 if type(components[i].geometry) == Mesh:
                     filename = components[i].geometry.filename
+                    # Handle package:// protocol prefix
+                    if filename.startswith('package://'):
+                        filename = filename.replace('package://', '')
                     mesh = tm.load(filename, force='mesh', process=False)
                     # print(f'link: {link.name} is volume: {mesh.is_volume}')
                 elif type(components[i].geometry) == Cylinder:
@@ -499,14 +502,14 @@ if __name__ == '__main__':
                                      'cpu', 
                                      1., 
                                      use_collision=True, 
-                                     urdf_assets_meta_path="PoseOptimize/hand_assets/hand_assets_meta.json",
+                                     urdf_assets_meta_path="robot_models/meta/leap_hand/hand_assets_meta.json",
                                      sample_density=2e7)
     hand_model_vis = get_handmodel('allegro', 
                                    1, 
                                    'cpu', 
                                    1., 
                                    use_collision=False, 
-                                   urdf_assets_meta_path="PoseOptimize/hand_assets/hand_assets_meta.json",
+                                   urdf_assets_meta_path="robot_models/meta/leap_hand/hand_assets_meta.json",
                                    sample_density=2e7)
     data = []
     # for i,hand_model in enumerate([hand_model_coll, hand_model_vis]):

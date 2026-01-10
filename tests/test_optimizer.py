@@ -250,7 +250,7 @@ def main():
     parser.add_argument('--ibs_indices', type=str, default=None, 
                         help='Comma-separated IBS indices (overrides num_ibs)')
     parser.add_argument('--hand_name', type=str, default='leap_hand')
-    parser.add_argument('--device', type=str, default='cuda:0')
+    parser.add_argument('--device', type=str, default='cpu', help='Device (cpu or cuda:0)')
     parser.add_argument('--max_iters', type=int, default=200, help='Max optimization iterations')
     parser.add_argument('--parallel_num', type=int, default=5, help='Parallel poses per IBS')
     parser.add_argument('--lr', type=float, default=5e-3, help='Learning rate')

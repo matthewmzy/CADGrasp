@@ -1,0 +1,223 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Robot>
+  <!-- Palmar surface point definitions for LEAP Hand simplified model -->
+  <!-- These are contact candidates on the palm-facing side of each link -->
+  
+  <!-- Index Finger (finger 1) -->
+  <PointCloudLinkData>
+    <linkName>fingertip</linkName>
+    <points>
+      <Vector3><x>-0.012</x><y>0.015</y><z>-0.035</z></Vector3>
+      <Vector3><x>-0.012</x><y>0.015</y><z>-0.040</z></Vector3>
+      <Vector3><x>-0.012</x><y>0.015</y><z>-0.045</z></Vector3>
+    </points>
+    <normal>
+      <Vector3><x>-1.0</x><y>0.0</y><z>0.0</z></Vector3>
+      <Vector3><x>-1.0</x><y>0.0</y><z>0.0</z></Vector3>
+      <Vector3><x>-1.0</x><y>0.0</y><z>0.0</z></Vector3>
+    </normal>
+  </PointCloudLinkData>
+  
+  <PointCloudLinkData>
+    <linkName>dip</linkName>
+    <points>
+      <Vector3><x>0.0</x><y>0.015</y><z>-0.015</z></Vector3>
+      <Vector3><x>0.0</x><y>0.015</y><z>-0.025</z></Vector3>
+    </points>
+    <normal>
+      <Vector3><x>0.0</x><y>0.0</y><z>-1.0</z></Vector3>
+      <Vector3><x>0.0</x><y>0.0</y><z>-1.0</z></Vector3>
+    </normal>
+  </PointCloudLinkData>
+  
+  <PointCloudLinkData>
+    <linkName>pip</linkName>
+    <points>
+      <Vector3><x>0.0</x><y>0.0</y><z>-0.01</z></Vector3>
+    </points>
+    <normal>
+      <Vector3><x>0.0</x><y>0.0</y><z>-1.0</z></Vector3>
+    </normal>
+  </PointCloudLinkData>
+  
+  <PointCloudLinkData>
+    <linkName>mcp_joint</linkName>
+    <points>
+      <Vector3><x>-0.01</x><y>0.015</y><z>0.03</z></Vector3>
+      <Vector3><x>-0.01</x><y>0.015</y><z>0.04</z></Vector3>
+    </points>
+    <normal>
+      <Vector3><x>-1.0</x><y>0.0</y><z>0.0</z></Vector3>
+      <Vector3><x>-1.0</x><y>0.0</y><z>0.0</z></Vector3>
+    </normal>
+  </PointCloudLinkData>
+  
+  <!-- Middle Finger (finger 2) -->
+  <PointCloudLinkData>
+    <linkName>fingertip_2</linkName>
+    <points>
+      <Vector3><x>-0.012</x><y>0.015</y><z>-0.035</z></Vector3>
+      <Vector3><x>-0.012</x><y>0.015</y><z>-0.040</z></Vector3>
+      <Vector3><x>-0.012</x><y>0.015</y><z>-0.045</z></Vector3>
+    </points>
+    <normal>
+      <Vector3><x>-1.0</x><y>0.0</y><z>0.0</z></Vector3>
+      <Vector3><x>-1.0</x><y>0.0</y><z>0.0</z></Vector3>
+      <Vector3><x>-1.0</x><y>0.0</y><z>0.0</z></Vector3>
+    </normal>
+  </PointCloudLinkData>
+  
+  <PointCloudLinkData>
+    <linkName>dip_2</linkName>
+    <points>
+      <Vector3><x>0.0</x><y>0.015</y><z>-0.015</z></Vector3>
+      <Vector3><x>0.0</x><y>0.015</y><z>-0.025</z></Vector3>
+    </points>
+    <normal>
+      <Vector3><x>0.0</x><y>0.0</y><z>-1.0</z></Vector3>
+      <Vector3><x>0.0</x><y>0.0</y><z>-1.0</z></Vector3>
+    </normal>
+  </PointCloudLinkData>
+  
+  <PointCloudLinkData>
+    <linkName>pip_2</linkName>
+    <points>
+      <Vector3><x>0.0</x><y>0.0</y><z>-0.01</z></Vector3>
+    </points>
+    <normal>
+      <Vector3><x>0.0</x><y>0.0</y><z>-1.0</z></Vector3>
+    </normal>
+  </PointCloudLinkData>
+  
+  <PointCloudLinkData>
+    <linkName>mcp_joint_2</linkName>
+    <points>
+      <Vector3><x>-0.01</x><y>0.015</y><z>0.03</z></Vector3>
+      <Vector3><x>-0.01</x><y>0.015</y><z>0.04</z></Vector3>
+    </points>
+    <normal>
+      <Vector3><x>-1.0</x><y>0.0</y><z>0.0</z></Vector3>
+      <Vector3><x>-1.0</x><y>0.0</y><z>0.0</z></Vector3>
+    </normal>
+  </PointCloudLinkData>
+  
+  <!-- Ring Finger (finger 3) -->
+  <PointCloudLinkData>
+    <linkName>fingertip_3</linkName>
+    <points>
+      <Vector3><x>-0.012</x><y>0.015</y><z>-0.035</z></Vector3>
+      <Vector3><x>-0.012</x><y>0.015</y><z>-0.040</z></Vector3>
+      <Vector3><x>-0.012</x><y>0.015</y><z>-0.045</z></Vector3>
+    </points>
+    <normal>
+      <Vector3><x>-1.0</x><y>0.0</y><z>0.0</z></Vector3>
+      <Vector3><x>-1.0</x><y>0.0</y><z>0.0</z></Vector3>
+      <Vector3><x>-1.0</x><y>0.0</y><z>0.0</z></Vector3>
+    </normal>
+  </PointCloudLinkData>
+  
+  <PointCloudLinkData>
+    <linkName>dip_3</linkName>
+    <points>
+      <Vector3><x>0.0</x><y>0.015</y><z>-0.015</z></Vector3>
+      <Vector3><x>0.0</x><y>0.015</y><z>-0.025</z></Vector3>
+    </points>
+    <normal>
+      <Vector3><x>0.0</x><y>0.0</y><z>-1.0</z></Vector3>
+      <Vector3><x>0.0</x><y>0.0</y><z>-1.0</z></Vector3>
+    </normal>
+  </PointCloudLinkData>
+  
+  <PointCloudLinkData>
+    <linkName>pip_3</linkName>
+    <points>
+      <Vector3><x>0.0</x><y>0.0</y><z>-0.01</z></Vector3>
+    </points>
+    <normal>
+      <Vector3><x>0.0</x><y>0.0</y><z>-1.0</z></Vector3>
+    </normal>
+  </PointCloudLinkData>
+  
+  <PointCloudLinkData>
+    <linkName>mcp_joint_3</linkName>
+    <points>
+      <Vector3><x>-0.01</x><y>0.015</y><z>0.03</z></Vector3>
+      <Vector3><x>-0.01</x><y>0.015</y><z>0.04</z></Vector3>
+    </points>
+    <normal>
+      <Vector3><x>-1.0</x><y>0.0</y><z>0.0</z></Vector3>
+      <Vector3><x>-1.0</x><y>0.0</y><z>0.0</z></Vector3>
+    </normal>
+  </PointCloudLinkData>
+  
+  <!-- Thumb -->
+  <PointCloudLinkData>
+    <linkName>thumb_fingertip</linkName>
+    <points>
+      <Vector3><x>-0.012</x><y>-0.015</y><z>-0.040</z></Vector3>
+      <Vector3><x>-0.012</x><y>-0.015</y><z>-0.045</z></Vector3>
+      <Vector3><x>-0.012</x><y>-0.015</y><z>-0.050</z></Vector3>
+    </points>
+    <normal>
+      <Vector3><x>-1.0</x><y>0.0</y><z>0.0</z></Vector3>
+      <Vector3><x>-1.0</x><y>0.0</y><z>0.0</z></Vector3>
+      <Vector3><x>-1.0</x><y>0.0</y><z>0.0</z></Vector3>
+    </normal>
+  </PointCloudLinkData>
+  
+  <PointCloudLinkData>
+    <linkName>thumb_dip</linkName>
+    <points>
+      <Vector3><x>0.0</x><y>-0.015</y><z>0.020</z></Vector3>
+      <Vector3><x>0.0</x><y>-0.015</y><z>0.030</z></Vector3>
+      <Vector3><x>0.0</x><y>-0.015</y><z>0.040</z></Vector3>
+    </points>
+    <normal>
+      <Vector3><x>0.0</x><y>-1.0</y><z>0.0</z></Vector3>
+      <Vector3><x>0.0</x><y>-1.0</y><z>0.0</z></Vector3>
+      <Vector3><x>0.0</x><y>-1.0</y><z>0.0</z></Vector3>
+    </normal>
+  </PointCloudLinkData>
+  
+  <PointCloudLinkData>
+    <linkName>thumb_pip</linkName>
+    <points>
+      <Vector3><x>0.0</x><y>0.0</y><z>-0.01</z></Vector3>
+    </points>
+    <normal>
+      <Vector3><x>0.0</x><y>0.0</y><z>-1.0</z></Vector3>
+    </normal>
+  </PointCloudLinkData>
+  
+  <PointCloudLinkData>
+    <linkName>pip_4</linkName>
+    <points>
+      <Vector3><x>0.0</x><y>0.0</y><z>-0.01</z></Vector3>
+    </points>
+    <normal>
+      <Vector3><x>0.0</x><y>0.0</y><z>-1.0</z></Vector3>
+    </normal>
+  </PointCloudLinkData>
+  
+  <!-- Palm base -->
+  <PointCloudLinkData>
+    <linkName>hand_base_link</linkName>
+    <points>
+      <Vector3><x>-0.01</x><y>0.0</y><z>0.0</z></Vector3>
+      <Vector3><x>-0.02</x><y>0.0</y><z>0.0</z></Vector3>
+      <Vector3><x>-0.03</x><y>0.0</y><z>0.0</z></Vector3>
+      <Vector3><x>-0.01</x><y>0.0</y><z>-0.02</z></Vector3>
+      <Vector3><x>-0.01</x><y>0.0</y><z>-0.04</z></Vector3>
+      <Vector3><x>-0.01</x><y>0.0</y><z>-0.06</z></Vector3>
+    </points>
+    <normal>
+      <Vector3><x>-1.0</x><y>0.0</y><z>0.0</z></Vector3>
+      <Vector3><x>-1.0</x><y>0.0</y><z>0.0</z></Vector3>
+      <Vector3><x>-1.0</x><y>0.0</y><z>0.0</z></Vector3>
+      <Vector3><x>-1.0</x><y>0.0</y><z>0.0</z></Vector3>
+      <Vector3><x>-1.0</x><y>0.0</y><z>0.0</z></Vector3>
+      <Vector3><x>-1.0</x><y>0.0</y><z>0.0</z></Vector3>
+    </normal>
+  </PointCloudLinkData>
+  
+</Robot>

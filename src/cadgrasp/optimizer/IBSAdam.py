@@ -171,17 +171,6 @@ class IBSAdam:
 
         return energy_1, energy_2, energy_3, energy_4
     
-    def finger_distals_match_energy(self):
-        '''
-        params: 
-            distal_points           [num_particles, 3, 3]
-            ibs_data                [num_particles, ibs_size, 3]
-        '''
-        distal_points = self.handmodel.get_finger_distals()
-        diffs = torch.norm(distal_points - self.distals_from_ibs, dim=2)
-        energy = diffs.mean(dim=1)
-        # energy = diffs[:,0]
-        return energy
 
     def joint_limits_energy(self):
         '''
