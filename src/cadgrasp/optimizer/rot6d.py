@@ -105,15 +105,15 @@ def cross_product(u, v):
 
 def add_transform_perturbation(transforms, max_translation=0.015, max_rotation=5):
     """
-    为变换矩阵添加平移和旋转的随机扰动。
+    Add random translation and rotation perturbations to transformation matrices.
     
-    参数:
-        transforms (np.ndarray or torch.Tensor): 形状为 (N, 4, 4) 的变换矩阵。
-        max_translation (float): 平移扰动的最大值 (单位:m)。
-        max_rotation (float): 旋转扰动的最大值（单位：度）。
+    Args:
+        transforms (np.ndarray or torch.Tensor): Transformation matrices of shape (N, 4, 4).
+        max_translation (float): Maximum translation perturbation value (unit: m).
+        max_rotation (float): Maximum rotation perturbation value (unit: degrees).
     
-    返回:
-        np.ndarray or torch.Tensor: 添加扰动后的变换矩阵，与输入类型一致。
+    Returns:
+        np.ndarray or torch.Tensor: Perturbed transformation matrices, same type as input.
     """
     # Determine if input is NumPy or PyTorch and set backend accordingly
     is_torch = isinstance(transforms, torch.Tensor)
@@ -140,19 +140,19 @@ def add_transform_perturbation(transforms, max_translation=0.015, max_rotation=5
         cos = np.cos
         sin = np.sin
 
-    # 1. 生成平移扰动
-    translation_perturbation = randn(N, 3) * (max_translation / 3)  # 正态分布，标准差为 max_translation / 3
+    # 1. Generate translation perturbation
+    translation_perturbation = randn(N, 3) * (max_translation / 3)  # Normal distribution, std = max_translation / 3
     translation_perturbation = clip(translation_perturbation, -max_translation, max_translation)
     
-    # 将平移扰动转换为齐次变换矩阵
+    # Convert translation perturbation to homogeneous transformation matrices
     translation_matrices = eye(4).repeat(N, 1, 1) if is_torch else eye(4)[np.newaxis, :, :].repeat(N, axis=0)
     translation_matrices[:, :3, 3] = translation_perturbation
     
-    # 2. 生成旋转扰动
-    rotation_perturbation = randn(N, 3) * (max_rotation / 3)  # 正态分布，标准差为 max_rotation / 3
+    # 2. Generate rotation perturbation
+    rotation_perturbation = randn(N, 3) * (max_rotation / 3)  # Normal distribution, std = max_rotation / 3
     rotation_perturbation = clip(rotation_perturbation, -max_rotation, max_rotation)
     
-    # 将旋转扰动转换为旋转矩阵
+    # Convert rotation perturbation to rotation matrices
     rotation_matrices = zeros((N, 4, 4)) if is_torch else zeros((N, 4, 4))
     rotation_perturbation_rad = radians(rotation_perturbation)  # Convert degrees to radians
     
@@ -183,10 +183,10 @@ def add_transform_perturbation(transforms, max_translation=0.015, max_rotation=5
         rotation_matrices[i, :3, :3] = R
         rotation_matrices[i, 3, 3] = 1
     
-    # 3. 组合平移和旋转扰动
+    # 3. Combine translation and rotation perturbations
     perturbation_matrices = matmul(translation_matrices, rotation_matrices)
     if is_torch:
         perturbation_matrices = perturbation_matrices.to(device)
-    # 4. 将扰动应用到原始变换矩阵
+    # 4. Apply perturbation to original transformation matrices
     perturbed_transforms = matmul(perturbation_matrices, transforms)
     return perturbed_transforms

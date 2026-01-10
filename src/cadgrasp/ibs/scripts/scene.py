@@ -234,7 +234,7 @@ class Scene:
             color=color,
             opacity=opacity,
             name='scene_mesh',
-            flatshading=True  # 启用平面着色，改善视觉效果
+            flatshading=True  # Enable flat shading for better visual effect
         )
         return mesh3d
 
@@ -260,7 +260,7 @@ class Scene:
     #     scene_pc_c = torch.from_numpy(scene_pc_c).float()
     #     c2w_trans = scene_data['extrinsics'][view_id]
     #     c2w_trans = torch.from_numpy(c2w_trans).float()
-    #     scene_pc_w = transform_points(scene_pc_c, c2w_trans)  # (N, 3)， 世界坐标系
+    #     scene_pc_w = transform_points(scene_pc_c, c2w_trans)  # (N, 3), world coordinate system
     #     scene_pc_h = batch_transform_points(scene_pc_w.unsqueeze(0).repeat(self.ibs_load_per_scene, 1, 1), torch.from_numpy(w2h_trans).float())
 
 
@@ -364,7 +364,7 @@ class Scene:
 
     def visualize_plotly(self, view=0):
         pc, extrinsics, graspness = self.get_view_pc(view)
-        pc = torch.einsum('ab,nb->na', self.camera_pose[:3, :3], pc) + self.camera_pose[:3, 3]  # 相机坐标系转世界坐标系
+        pc = torch.einsum('ab,nb->na', self.camera_pose[:3, :3], pc) + self.camera_pose[:3, 3]  # Transform from camera to world coordinates
         view_plotly = self.vis.pc_plotly(pc, size=1, value=graspness)
 
         plotly = view_plotly + self.robot_plotly + self.pc_plotly + self.coord_plotly + self.get_mesh_plotly()

@@ -16,6 +16,12 @@ cd CADGrasp
 git submodule update --init --recursive
 ```
 
+The repository includes 4 submodules in `thirdparty/`:
+- **LASDiffusion**: IBS voxel diffusion model
+- **TorchSDF**: SDF computation for hand model
+- **MinkowskiEngine**: Sparse convolutions (CUDA 12/13 compatible fork)
+- **torchprimitivesdf**: Primitive SDF computation
+
 ### 2. Create conda environment
 
 ```bash
@@ -29,9 +35,6 @@ conda activate cad
 # Install PyTorch with CUDA support (adjust for your CUDA version)
 # For CUDA 12.1:
 pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
-
-# Or use Chinese mirror for faster download:
-pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121 -i https://pypi.tuna.tsinghua.edu.cn/simple
 ```
 
 ### 4. Install CADGrasp package
@@ -61,7 +64,15 @@ pip install -e . --no-build-isolation
 cd ../..
 ```
 
-### 7. Install MinkowskiEngine (for sparse convolutions)
+### 7. Install torchprimitivesdf
+
+```bash
+cd thirdparty/torchprimitivesdf
+pip install -e .
+cd ../..
+```
+
+### 8. Install MinkowskiEngine (for sparse convolutions)
 
 For **CUDA 12.x** compatibility, we use a patched fork:
 
@@ -75,7 +86,7 @@ cd ../..
 
 > **Note**: The MinkowskiEngine submodule points to [MinkowskiEngineCuda13](https://github.com/AzharSindhi/MinkowskiEngineCuda13), which includes fixes for CUDA 12/13 compatibility.
 
-### 8. Install IsaacGym (optional, for simulation)
+### 9. Install IsaacGym (optional, for simulation)
 
 Download IsaacGym from [NVIDIA](https://developer.nvidia.com/isaac-gym) and install:
 
@@ -94,6 +105,118 @@ cd isaacgym/python && pip install -e .
 - Current PyTorch only supports up to sm_90 (RTX 40 series)
 - The code will still compile and work on these GPUs using PTX fallback
 
+---
+
+## Quick Start
+
+### Complete Pipeline
+
+```
+Download Data → Prepare Checkpoints → Data Processing → Train LASDiffusion → Predict → Evaluate → Print Results
+```
+
+### Step 1: Download DexGraspNet 2.0 Data
+
+```bash
+# Download from HuggingFace
+huggingface-cli download lhrlhr/DexGraspNet2.0 --local-dir data/DexGraspNet2.0
+```
+
+### Step 2: Prepare Checkpoint Directory
+
+Create a separate checkpoint directory for CADGrasp predictions:
+
+```bash
+# Copy the OURS checkpoint to CAD directory
+cp -r data/DexGraspNet2.0/DexGraspNet2.0-ckpts/OURS data/DexGraspNet2.0/DexGraspNet2.0-ckpts/CAD
+```
+
+### Step 3: Data Processing
+
+#### 3.1 Generate Network Input Data
+
+Preprocess depth images to point clouds for network training:
+
+```bash
+# GraspNet scenes (100-190 dense, 200-380 loose, 9000-9900 random)
+python -m cadgrasp.baseline.preprocess.compute_network_input_all \
+    --dataset graspnet --scene_id_start 100 --scene_id_end 190
+
+python -m cadgrasp.baseline.preprocess.compute_network_input_all \
+    --dataset graspnet --scene_id_start 200 --scene_id_end 380
+
+python -m cadgrasp.baseline.preprocess.compute_network_input_all \
+    --dataset graspnet --scene_id_start 9000 --scene_id_end 9900
+
+# ACRONYM scenes
+python -m cadgrasp.baseline.preprocess.compute_network_input_all --dataset acronym
+```
+
+#### 3.2 Generate IBS Training Data
+
+Three commands to generate IBS data from grasp annotations:
+
+```bash
+# 1. Simulation filtering - Filter successful grasps using IsaacGym (optional)
+python src/cadgrasp/ibs/scripts/batch_filter_grasps.py \
+    --scene_start 0 --scene_end 100 --gpu_ids 0,1,2,3
+
+# 2. FPS sampling - Downsample grasps per scene (skip step 1 = assume all successful)
+python src/cadgrasp/ibs/scripts/batch_fps_sample_grasps.py \
+    --scene_start 0 --scene_end 100
+
+# 3. IBS computation - Generate IBS voxel data to data/ibsdata/
+python src/cadgrasp/ibs/scripts/batch_calculate_ibs.py \
+    --scene_start 0 --scene_end 100
+```
+
+> See [src/cadgrasp/ibs/scripts/README.md](src/cadgrasp/ibs/scripts/README.md) for detailed parameters.
+
+### Step 4: Train LASDiffusion
+
+```bash
+cd thirdparty/LASDiffusion
+python train.py \
+    --name LEAP_dif \
+    --ibs_path ../../data/ibsdata \
+    --scene_pc_path ../../data/DexGraspNet2.0/scenes \
+    --batch_size 64 \
+    --training_epoch 200000
+cd ../..
+```
+
+Model checkpoints will be saved to `thirdparty/LASDiffusion/results/LEAP_dif/`.
+
+### Step 5: Run Prediction
+
+```bash
+# Predict on all test scenes (GraspNet + ACRONYM)
+python src/cadgrasp/baseline/eval/predict_dexterous_all_cates.py \
+    --ckpt data/DexGraspNet2.0/DexGraspNet2.0-ckpts/CAD/ckpt/ckpt_50000.pth
+```
+
+This runs prediction on:
+- GraspNet dense (100-190), loose (200-380), random (9000-9900)
+- ACRONYM dataset
+
+Results saved to `data/DexGraspNet2.0/DexGraspNet2.0-ckpts/CAD/results/`.
+
+### Step 6: Run Evaluation
+
+```bash
+# Evaluate all splits on all datasets
+python src/cadgrasp/baseline/eval/evaluate_dexterous_all_cates.py
+```
+
+### Step 7: Print Results
+
+```bash
+python src/cadgrasp/baseline/eval/print_dexterous_results.py \
+    --ckpt_path data/DexGraspNet2.0/DexGraspNet2.0-ckpts/CAD/ckpt/ckpt_50000.pth
+```
+
+---
+
 ## Project Structure
 
 ```
@@ -101,123 +224,71 @@ CADGrasp/
 ├── src/cadgrasp/              # Main Python package
 │   ├── baseline/              # DexGraspNet 2.0 baseline models
 │   │   ├── network/           # Neural network architectures
-│   │   ├── eval/              # Evaluation scripts
-│   │   ├── preprocess/        # Data preprocessing
-│   │   └── utils/             # Utilities (robot model, visualization, etc.)
+│   │   ├── eval/              # Prediction and evaluation scripts
+│   │   ├── preprocess/        # Data preprocessing (depth → point cloud)
+│   │   └── utils/             # Utilities (robot model, simulator, etc.)
 │   ├── ibs/                   # IBS data processing
 │   │   ├── scripts/           # IBS computation scripts
 │   │   └── utils/             # IBS utilities
 │   ├── optimizer/             # Pose optimization with IBS
 │   └── evaluator/             # End-to-end evaluation pipeline
-├── thirdparty/
-│   └── LASDiffusion/          # IBS voxel diffusion model (git submodule)
+├── thirdparty/                # Git submodules
+│   ├── LASDiffusion/          # IBS voxel diffusion model
+│   ├── TorchSDF/              # SDF computation
+│   ├── MinkowskiEngine/       # Sparse convolutions (CUDA 12/13 fork)
+│   └── torchprimitivesdf/     # Primitive SDF computation
+├── robot_models/              # Robot URDF and mesh files
+│   ├── urdf/                  # URDF files
+│   ├── meshes/                # Collision and visual meshes
+│   └── meta/                  # Metadata (joint limits, keypoints, etc.)
 ├── configs/                   # Hydra/YAML configuration files
-├── assets/                    # Robot URDF models and meshes
+├── tests/                     # Visualization and testing scripts
+│   ├── hand_info/             # Hand model visualization and editing tools
+│   └── *.py                   # Various visualization scripts
 ├── data/                      # Datasets (download separately)
-│   ├── scenes/                # GraspNet-1Billion scenes
-│   ├── meshdata/              # Object meshes
-│   └── ibs/                   # Generated IBS data
-├── experiments/               # Experiment scripts and examples
-│   ├── scripts/               # Bash scripts for experiments
-│   ├── tests/                 # Visualization and test scripts
-│   └── examples/              # Example code
+│   ├── DexGraspNet2.0/        # Downloaded dataset
+│   └── ibsdata/               # Generated IBS data
 └── pyproject.toml             # Package configuration
 ```
 
-## Quick Start
-
-### Train IBS Diffusion Model
-
-```bash
-cd thirdparty/LASDiffusion
-python train.py train_from_folder \
-    --name LEAP_dif \
-    --ibs_path ../../data/ibs/ibsdata \
-    --scene_pc_path ../../data/scenes \
-    --batch_size 64 --training_epoch 200000
-```
-
-### Run End-to-End Evaluation
-
-```bash
-python -m cadgrasp.evaluator.predict
-```
-
-### Visualize Results
-
-```bash
-python experiments/tests/visualize_dex_pred.py --ckpt_path path/to/checkpoint.pth
-```
-
-### CADGrasp Prediction Pipeline
-
-Run the full CADGrasp prediction pipeline (DexGraspNet2.0 → IBS → Optimization):
-
-```bash
-# Predict on GraspNet scenes (starting from scene_0100)
-python -m cadgrasp.baseline.eval.predict_dexterous \
-    --ckpt_path data/DexGraspNet2.0/DexGraspNet2.0-ckpts/CAD/ckpt/ckpt_50000.pth \
-    --las_exp_name LEAP_dif \
-    --scene_id scene_0100 \
-    --scene_num 10 \
-    --top_n 5 \
-    --dataset graspnet
-```
-
-**Key parameters:**
-- `--ckpt_path`: DexGraspNet2.0 checkpoint for grasp point and rotation prediction
-- `--las_exp_name`: LASDiffusion experiment name (model in `thirdparty/LASDiffusion/results/{name}/recent/last.ckpt`)
-- `--top_n`: Number of top grasp candidates per view for IBS prediction (default: 5)
-- `--diffusion_steps`: Number of diffusion steps for IBS generation (default: 50)
-- `--max_iters`: Maximum pose optimization iterations (default: 200)
-- `--parallel_num`: Number of parallel optimizations per IBS (default: 10)
-
-Results will be saved to `data/DexGraspNet2.0/DexGraspNet2.0-ckpts/CAD/results/`.
-
-## Data Preparation
-
-### Download DexGraspNet 2.0 Data
-
-```bash
-# Download from HuggingFace
-huggingface-cli download lhrlhr/DexGraspNet2.0 --local-dir data/
-```
-
-### Setup CADGrasp Checkpoint Directory
-
-After downloading the data, create a separate checkpoint directory for CADGrasp predictions:
-
-```bash
-# Copy the OURS checkpoint to CAD directory
-cp -r data/DexGraspNet2.0/DexGraspNet2.0-ckpts/OURS data/DexGraspNet2.0/DexGraspNet2.0-ckpts/CAD
-```
-
-This ensures CADGrasp results are saved separately from baseline results.
-
-### Generate IBS Data
-
-**快速批量生成 (推荐)**：只需三条命令即可完成从原始抓取数据到IBS训练数据的全流程：
-
-```bash
-# 1. 仿真筛选 - 使用IsaacGym筛选成功抓取 (可选，需安装IsaacGym)
-python src/cadgrasp/ibs/scripts/batch_filter_grasps.py --scene_start 0 --scene_end 100 --gpu_ids 0,1,2,3
-
-# 2. FPS采样 - 对每个场景的抓取进行FPS降采样 (跳过第1步会默认所有抓取成功)
-python src/cadgrasp/ibs/scripts/batch_fps_sample_grasps.py --scene_start 0 --scene_end 100
-
-# 3. IBS计算 - 生成IBS体素数据到data/ibsdata/
-python src/cadgrasp/ibs/scripts/batch_calculate_ibs.py --scene_start 0 --scene_end 100
-```
-
-> 详细参数说明和单场景调试请参考 [src/cadgrasp/ibs/scripts/README.md](src/cadgrasp/ibs/scripts/README.md)
+---
 
 ## IBS Data Format
 
 | File | Shape | Description |
 |------|-------|-------------|
-| `data/ibs/ibsdata/ibs/scene_xxxx.npy` | `(N, 40, 40, 40, 3)` bool | IBS voxels: occupancy, contact, thumb_contact |
-| `data/ibs/ibsdata/w2h_trans/scene_xxxx.npy` | `(N, 4, 4)` float32 | World-to-hand transforms |
-| `data/ibs/scene_valid_ids/scene_xxxx/view_yyyy.npy` | `(N,)` bool | Per-view visibility masks |
+| `data/ibsdata/ibs/scene_xxxx.npy` | `(N, 40, 40, 40, 3)` bool | IBS voxels: occupancy, contact, thumb_contact |
+| `data/ibsdata/w2h_trans/scene_xxxx.npy` | `(N, 4, 4)` float32 | World-to-hand transforms |
+| `data/ibsdata/hand_dis/scene_xxxx.npy` | `(N,)` float32 | Hand-to-IBS distances |
+
+---
+
+## Tools and Utilities
+
+### Visualization Scripts (tests/)
+
+See [tests/README.md](tests/README.md) for detailed usage.
+
+| Script | Description |
+|--------|-------------|
+| `visualize_scene.py` | Visualize scene meshes with object poses |
+| `visualize_dex_grasp.py` | Visualize grasp annotations |
+| `vis_ibs.py` | Visualize IBS voxel data |
+| `vis_fps_grasps.py` | Visualize FPS-sampled grasp points |
+| `visualize_dex_pred.py` | Visualize network predictions |
+| `count_data.py` | Count data at each pipeline stage |
+
+### Hand Model Tools (tests/hand_info/)
+
+Interactive tools for editing LEAP Hand self-collision keypoints and palmar surface points. See [tests/hand_info/README.md](tests/hand_info/README.md) for details.
+
+| Script | Description |
+|--------|-------------|
+| `visualize_keypoints_gui.py` | GUI editor for penetration keypoints |
+| `palmar_surface_collector.py` | Lasso selection tool for palmar surface points |
+| `visualize_keypoints_plotly.py` | Browser-based 3D visualization |
+
+---
 
 ## Module Reference
 
@@ -235,6 +306,8 @@ End-to-end evaluation combining LASDiffusion prediction and pose optimization.
 
 ### thirdparty.LASDiffusion
 3D voxel diffusion model for IBS prediction from scene point clouds.
+
+---
 
 ## Citation
 

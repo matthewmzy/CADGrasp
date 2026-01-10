@@ -260,19 +260,19 @@ class HandModel:
 
         for i, link_name in enumerate(self.penetration_keypoints):
             keypoints = self.penetration_keypoints[link_name]
-            if not keypoints:  # 跳过空的关键点
+            if not keypoints:  # Skip empty keypoints
                 continue
             
             keypoints = torch.tensor(keypoints, dtype=torch.float, device=self.device)
             if keypoints.ndim == 1:
                 keypoints = keypoints.unsqueeze(0)
-            keypoints = keypoints.unsqueeze(0).expand(batch_size, -1, -1)  # 扩展批量大小，无需重复拼接
+            keypoints = keypoints.unsqueeze(0).expand(batch_size, -1, -1)  # Expand batch size without repeated concatenation
             points_list.append(keypoints)
             link_indices_list.append(torch.full((batch_size, keypoints.shape[1]), i, dtype=torch.int, device=self.device))
         
         points = torch.cat(points_list, dim=1)  # (batch_size, total_keypoints, 3)
         link_indices = torch.cat(link_indices_list, dim=1)  # (batch_size, total_keypoints)
-        points_homogeneous = torch.cat([points, torch.ones(batch_size, points.shape[1], 1, device=self.device)], dim=2)  # 齐次坐标
+        points_homogeneous = torch.cat([points, torch.ones(batch_size, points.shape[1], 1, device=self.device)], dim=2)  # Homogeneous coordinates
 
         transforms_list = []
         for link_name in self.penetration_keypoints:
@@ -292,19 +292,12 @@ class HandModel:
             return points_transformed
 
         dis = torch.cdist(points_transformed, points_transformed, p=2) + 1e-13
-        dis = torch.where(dis < 1e-6, torch.full_like(dis, 1e6), dis)  # 防止除零误差
+        dis = torch.where(dis < 1e-6, torch.full_like(dis, 1e6), dis)  # Prevent division by zero error
 
         thred = 0.025
         E_spen = torch.clamp(thred - dis, min=0)
 
         return E_spen.sum(dim=(1, 2))
-
-    def calculate_distances1(self, point_cloud, q=None):
-        """
-        use pv
-        """
-        sdf_dis, sdf_grad = self.robot_sdf(point_cloud)
-        return sdf_dis[0]
 
     def calculate_distances(self, point_cloud, q=None):
         """

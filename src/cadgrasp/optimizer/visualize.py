@@ -69,11 +69,11 @@ def plot_point_cloud(pts, color='lightblue', mode='markers'):
 def dis_cmap(levels, red_thred=0.01, blue_thred=0.1):
     colors = []
     for x in levels.tolist():
-        if x < red_thred:  # 小于 0.01 为红色
+        if x < red_thred:  # Less than threshold is red
             colors.append(f"rgb(255, 0, 0)")
-        elif x > blue_thred:  # 大于 0.1 为蓝色
+        elif x > blue_thred:  # Greater than threshold is blue
             colors.append(f"rgb(0, 0, 255)")
-        else:  # 在线性区间 [0.01, 0.1] 插值
+        else:  # Linear interpolation in range [red_thred, blue_thred]
             t = (x - red_thred) / (blue_thred - red_thred)  
             r = int(255 * (1 - t)) 
             b = int(255 * t)
@@ -101,7 +101,7 @@ debug_cmap = lambda levels: [
 
 def plot_point_cloud_debug(pts, color_levels=None):
     """
-    可视化点云，每个点根据其值的范围设置颜色
+    Visualize point cloud with colors based on value range.
     """
     return go.Scatter3d(
         x=pts[:, 0],
@@ -225,57 +225,6 @@ def o3d_visualize_mesh(mesh, color=[0.7, 0.7, 0.7]):
     mesh.paint_uniform_color(color)
     o3d.visualization.draw_geometries([mesh])
 
-# def o3d_visualize_mesh_and_ibs(scene_o3d, ibs_data, show=None, hand_trans=None):
-#     ibs_data = ibs_data.copy()
-#     scene_mesh = scene_o3d
-#     scene_mesh.compute_vertex_normals()
-#     scene_mesh.paint_uniform_color([0.7, 0.7, 0.7]) 
-#     # 提取 IBS 数据
-#     ibs_points = ibs_data[:, :3]
-#     hand_distances = ibs_data[:, 3]
-#     hand_uv = ibs_data[:, 4:7]
-
-#     # center = np.mean(ibs_data['points'],axis=0)
-#     # uv = np.mean(ibs_data['hand_unit_vectors'],axis=0)
-#     # uv = uv*0.1/np.linalg.norm(uv)
-#     # pointer = o3d.geometry.LineSet()
-#     # pointer.points = o3d.utility.Vector3dVector([center,center+uv])
-#     # pointer.lines = o3d.utility.Vector2iVector([[0,1]])
-
-#     # 初始化颜色数组
-#     colors = np.array([[0.0, 0.0, 1.0]]).repeat(ibs_points.shape[0],axis=0) 
-#     if show == 'dis' or show == 'hand':
-#         if show == 'hand':
-#             ibs_points += hand_uv*hand_distances[:,None]
-#         contact_min_thre = 0.005
-#         contact_max_thre = 0.1
-        
-#         colors[hand_distances < contact_min_thre] = [1.0, 0.0, 0.0]  # 红色
-#         colors[hand_distances > contact_max_thre] = [0.0, 0.0, 1.0]  # 蓝色
-#         mask = (hand_distances >= contact_min_thre) & (hand_distances <= contact_max_thre)
-#         normalized_distances = (hand_distances[mask] - contact_min_thre) / (contact_max_thre - contact_min_thre)
-#         # 线性插值，颜色从红色渐变到蓝色
-#         colors[mask, 0] = 1.0 - normalized_distances  # 红色分量
-#         colors[mask, 2] = normalized_distances        # 蓝色分量
-#     elif show == 'cont':
-#         contact_min_thre = 0.005
-#         mask1 = hand_distances < contact_min_thre
-#         # mask2 = info_arr[:, 1] == IsPalmar.PALMAR
-#         # mask = mask1 & mask2
-#         colors[mask1] = [1.0, 0.0, 0.0]
-
-#     ibs_pcd = o3d.geometry.PointCloud()
-#     ibs_pcd.points = o3d.utility.Vector3dVector(ibs_points)
-#     ibs_pcd.colors = o3d.utility.Vector3dVector(colors)
-#     ibs_pcd.estimate_normals(search_param=o3d.geometry.KDTreeSearchParamHybrid(radius=0.1, max_nn=30))
-#     if hand_trans is None:
-#         o3d.visualization.draw_geometries([scene_mesh, ibs_pcd])
-#     else:
-#         hand_coord = o3d.geometry.TriangleMesh.create_coordinate_frame(size=0.1)
-#         hand_coord.transform(hand_trans)
-#         o3d.visualization.draw_geometries([scene_mesh, ibs_pcd, hand_coord])
-    
-
 
 def update_visualizer(scene_o3d_array, hand_o3d_array, ibs_data_array, time_interval=1, show=None):
 
@@ -289,9 +238,9 @@ def update_visualizer(scene_o3d_array, hand_o3d_array, ibs_data_array, time_inte
         hand_mesh = hand_o3d_array[i]
         ibs_data = ibs_data_array[i]
         scene_mesh.compute_vertex_normals()
-        scene_mesh.paint_uniform_color([0.7, 0.7, 0.7])  # 灰色场景
+        scene_mesh.paint_uniform_color([0.7, 0.7, 0.7])  # Gray scene
         hand_mesh.compute_vertex_normals()
-        hand_mesh.paint_uniform_color([1.0, 0.6, 0.6])  # 粉色手
+        hand_mesh.paint_uniform_color([1.0, 0.6, 0.6])  # Pink hand
         ibs_pcd = o3d.geometry.PointCloud()
         ibs_pcd.points = o3d.utility.Vector3dVector(ibs_data[:, :3])
 
@@ -306,13 +255,13 @@ def update_visualizer(scene_o3d_array, hand_o3d_array, ibs_data_array, time_inte
             contact_min_thre = 0.005
             contact_max_thre = 0.1
             
-            colors[hand_distances < contact_min_thre] = [1.0, 0.0, 0.0]  # 红色
-            colors[hand_distances > contact_max_thre] = [0.0, 0.0, 1.0]  # 蓝色
+            colors[hand_distances < contact_min_thre] = [1.0, 0.0, 0.0]  # Red
+            colors[hand_distances > contact_max_thre] = [0.0, 0.0, 1.0]  # Blue
             mask = (hand_distances >= contact_min_thre) & (hand_distances <= contact_max_thre)
             normalized_distances = (hand_distances[mask] - contact_min_thre) / (contact_max_thre - contact_min_thre)
-            # 线性插值，颜色从红色渐变到蓝色
-            colors[mask, 0] = 1.0 - normalized_distances  # 红色分量
-            colors[mask, 2] = normalized_distances        # 蓝色分量
+            # Linear interpolation, color gradient from red to blue
+            colors[mask, 0] = 1.0 - normalized_distances  # Red component
+            colors[mask, 2] = normalized_distances        # Blue component
             ibs_pcd.colors = o3d.utility.Vector3dVector(colors)
         elif show == 'finger':
             hand_part = InfoData.from_array(ibs_data)[:,0]
@@ -494,7 +443,7 @@ def save_energy_curve(scene, energy_dict, index, save_path):
         )
     )
 
-    # 保存图像为HTML文件
+    # Save figure as HTML file
     save_file = os.path.join(save_path, f'energy_{index}.html')
     fig.write_html(save_file)
     print(f"Plot saved to {save_file}")

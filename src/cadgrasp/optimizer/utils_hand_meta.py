@@ -2,26 +2,26 @@ from enum import Enum, IntEnum
 import numpy as np
 import sys
 
-# 定义指代手指的枚举
+# Enum for finger identification
 class Finger(IntEnum):
-    PALM    = 0     # 手掌
-    THUMB   = 1     # 拇指
-    INDEX   = 2     # 食指
-    MIDDLE  = 3     # 中指
-    RING    = 4     # 无名指
-    PINKY   = 5     # 小指
+    PALM    = 0     # Palm
+    THUMB   = 1     # Thumb
+    INDEX   = 2     # Index finger
+    MIDDLE  = 3     # Middle finger
+    RING    = 4     # Ring finger
+    PINKY   = 5     # Pinky finger
 
-# 定义掌侧和背侧的枚举
+# Enum for palmar/dorsal side
 class IsPalmar(IntEnum):
-    DORSAL  = 0     # 背侧
-    PALMAR  = 1     # 掌侧
+    DORSAL  = 0     # Dorsal side
+    PALMAR  = 1     # Palmar side
 
-# 定义关节位置的枚举
+# Enum for joint position
 class Joint(IntEnum):
-    PALM    = 0     # 手掌
-    BASE    = 1     # 基关节
-    MIDDLE  = 2     # 中间关节
-    DISTAL  = 3     # 远端关节
+    PALM    = 0     # Palm
+    BASE    = 1     # Base joint
+    MIDDLE  = 2     # Middle joint
+    DISTAL  = 3     # Distal joint
     
 def get_finger_and_joint(robot_name, link_name):
     ret = [None, None]
@@ -52,7 +52,7 @@ def get_finger_and_joint(robot_name, link_name):
 
 class InfoData:
     def __init__(self, finger=Finger.THUMB, is_palmar=IsPalmar.DORSAL, joint=Joint.BASE):
-        # 检查输入的合法性
+        # Validate input types
         if not isinstance(finger, Finger):
             raise ValueError("Invalid finger type.")
         if not isinstance(is_palmar, IsPalmar):
@@ -60,7 +60,7 @@ class InfoData:
         if not isinstance(joint, Joint):
             raise ValueError("Invalid joint type.")
         
-        # 通过位运算将各个字段组合成一个8比特整数
+        # Combine fields into an 8-bit integer using bit operations
         self.data = (finger & 0b111) | ((is_palmar & 0b1) << 3) | ((joint & 0b11) << 4)
     
     def from_array(arr):
@@ -71,18 +71,18 @@ class InfoData:
         result[:, 2] = (arr >> 4) % 4
         return result
 
-    # 获取 finger 字段
+    # Get finger field
     def get_finger(self):
-        return Finger(self.data & 0b111)  # 提取低3位
+        return Finger(self.data & 0b111)  # Extract lower 3 bits
 
-    # 获取 is_palmar 字段
+    # Get is_palmar field
     def get_is_palmar(self):
-        return IsPalmar((self.data >> 3) & 0b1)  # 提取第4位
+        return IsPalmar((self.data >> 3) & 0b1)  # Extract bit 4
 
-    # 获取 joint 字段
+    # Get joint field
     def get_joint(self):
-        return Joint((self.data >> 4) & 0b11)  # 提取第5-6位
+        return Joint((self.data >> 4) & 0b11)  # Extract bits 5-6
 
-    # 打印结构的二进制表示
+    # Print binary representation of the structure
     def to_bin(self):
-        return f'{self.data:08b}'  # 将整数转换为8位二进制字符串
+        return f'{self.data:08b}'  # Convert to 8-bit binary string

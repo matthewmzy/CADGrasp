@@ -170,7 +170,7 @@ class GraspCVAE(nn.Module):
             # obj_glb_feature, _ = self.obj_encoder(obj_pc) # [B, 512]
             hand_glb_feature, _ = self.hand_encoder(hand_xyz) # [B, 512]
             recon, means, log_var, z = self.cvae(hand_glb_feature, obj_glb_feature) # recon: [B, 30] or [B, 28]
-            recon = recon.contiguous().view(B, -1)  # 这行有什么用？
+            recon = recon.contiguous().view(B, -1)  # Flatten to [B, -1]
             loss, loss_dict = self.cal_loss(pose['trans_scale'], link_trans, link_rot, pose['trans'], pose['rot'], pose['joints'], hand_xyz, recon, pose['obj_pc'], means, log_var)
             # loss, loss_dict = self.cal_loss(pose['trans_scale'], link_trans, link_rot, pose['trans']*pose['trans_scale'], pose['rot'], pose['joints'], hand_xyz, recon, pose['obj_pc'], means, log_var)
             return loss, loss_dict

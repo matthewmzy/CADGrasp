@@ -15,10 +15,14 @@ def transform_points(pc, trans):
 
 def batch_transform_points(points, trans_matrix):
     """
-    将一批(B个)点云通过变换矩阵进行坐标变换。
-    :param points: (B, N, 3) 的点云坐标。
-    :param trans_matrix: (B, 4, 4) 的齐次变换矩阵。
-    :return: (B, N, 3) 的变换后的点云坐标。
+    Transform a batch of point clouds using transformation matrices.
+    
+    Args:
+        points: Point cloud coordinates of shape (B, N, 3).
+        trans_matrix: Homogeneous transformation matrices of shape (B, 4, 4).
+    
+    Returns:
+        Transformed point cloud coordinates of shape (B, N, 3).
     """
     if isinstance(points, np.ndarray):
         points_homogeneous = np.concatenate([points, np.ones((points.shape[0], points.shape[1], 1))], axis=2)
@@ -26,7 +30,7 @@ def batch_transform_points(points, trans_matrix):
         transformed_points = transformed_points_homogeneous[:, :, :3] / transformed_points_homogeneous[:, :, 3][:, :, np.newaxis].repeat(3, axis=2)
         return transformed_points
     elif isinstance(points, torch.Tensor):
-        points_homogeneous = torch.cat([points, torch.ones_like(points[:, :, :1])], dim=2)  # 拼接为齐次坐标
+        points_homogeneous = torch.cat([points, torch.ones_like(points[:, :, :1])], dim=2)  # Concatenate to homogeneous coordinates
         transformed_points_homogeneous = points_homogeneous @ trans_matrix.transpose(1, 2)
         transformed_points = transformed_points_homogeneous[:, :, :3] / transformed_points_homogeneous[:, :, 3].unsqueeze(2).repeat(1, 1, 3)
         return transformed_points

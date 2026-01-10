@@ -2,6 +2,22 @@
 
 This directory contains visualization scripts and data utility tools for the CADGrasp project.
 
+## Directory Structure
+
+```
+tests/
+├── hand_info/              # Hand model editing tools (GUI)
+│   ├── visualize_keypoints_gui.py      # GUI for editing penetration keypoints
+│   ├── palmar_surface_collector.py     # Lasso tool for palmar surface points
+│   └── visualize_keypoints_plotly.py   # Browser-based visualization
+├── visualize_scene.py      # Scene mesh visualization
+├── visualize_dex_grasp.py  # Grasp annotation visualization
+├── visualize_dex_pred.py   # Network prediction visualization
+├── vis_ibs.py              # IBS voxel visualization
+├── vis_fps_grasps.py       # FPS-sampled grasp visualization
+└── count_data.py           # Data statistics
+```
+
 ## Scripts Overview
 
 ### Data Visualization
@@ -23,7 +39,13 @@ This directory contains visualization scripts and data utility tools for the CAD
 
 | Script | Description | Usage |
 |--------|-------------|-------|
-| `visualize_dex_pred.py` | Visualize trained network predictions | `python tests/visualize_dex_pred.py --ckpt_path ... --scene scene_0055` |
+| `visualize_dex_pred.py` | Visualize trained network predictions | `python tests/visualize_dex_pred.py --ckpt_path ...` |
+
+### Hand Model Tools
+
+See [hand_info/README.md](hand_info/README.md) for interactive tools to edit:
+- **Penetration keypoints**: Points for self-collision detection
+- **Palmar surface points**: Points on the palm side of the hand
 
 ## Data Paths
 
@@ -76,9 +98,10 @@ python tests/count_data.py --scene_start 100 --scene_end 130 --detailed
 - `trimesh`: Mesh loading
 - `transforms3d`: Coordinate transformations
 - `tabulate`: Table formatting (for count_data.py)
+- `open3d`: 3D visualization and GUI (for hand_info tools)
 - `numpy`, `torch`: Numerical computation
 
 Install with:
 ```bash
-pip install plotly trimesh transforms3d tabulate
+pip install plotly trimesh transforms3d tabulate open3d
 ```
