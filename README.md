@@ -1,183 +1,251 @@
-# CADGraspNet 2.0
-Official code for "**CADGrasp: Learning Contact and Collision Aware General Dexterous Grasping in Cluttered Scenes **" *(NeurIPS 2025)*
+# CADGrasp: Interaction Bisector Surface for Dexterous Grasping
 
-[Project Page](https://https://cadgrasp.github.io/) | [Paper](https://arxiv.org/pdf/2410.23004)
+Contact- and collision-aware dexterous grasping pipeline that introduces **Interaction Bisector Surface (IBS)** as an intermediate representation. IBS captures equidistant points between hand and objects, enabling LASDiffusion to predict contact-aware voxels and PoseOptimize to recover feasible hand poses.
 
 ![image](./figure/teaser.png)
 
-## Environment
+## Installation
 
-- Ubuntu 22.04
-- CUDA 12.1
-
+### 1. Clone with submodules
 
 ```bash
+git clone --recursive https://github.com/matthewmzy/CADGrasp.git
+cd CADGrasp
 
-conda create -n CADGrasp python=3.8
-conda activate CADGrasp
-
-pip install torch==2.1.0 torchvision==0.16.0 torchaudio==2.1.0 --index-url https://download.pytorch.org/whl/cu121
-
-wget https://mirrors.tuna.tsinghua.edu.cn/anaconda/cloud/pytorch3d/linux-64/pytorch3d-0.7.5-py38_cu117_pyt201.tar.bz2
-conda install -y --use-local ./pytorch3d-0.7.5-py38_cu117_pyt201.tar.bz2
-
-git clone git@github.com:wrc042/TorchSDF.git
-(cd TorchSDF; pip install -e .)
-
-git clone git@github.com:mzhmxzh/torchprimitivesdf.git
-(cd torchprimitivesdf; pip install -e .)
-
-# Download IsaacGym4 from https://developer.nvidia.com/isaac-gym
-(cd isaacgym/python; pip install -e .)
-
-pip install plotly
-
-pip install transforms3d
-
-pip install open3d==0.17.0
-
-pip install urdf_parser_py
-
-pip install tensorboard
-
-pip install coacd
-
-pip install rich
-
-pip install ikpy
-
-pip install einops
-
-git clone git@github.com:huggingface/diffusers.git
-(cd diffusers; pip install -e ".[torch]")
-
-pip install graspnetAPI
-
-pip install wandb
-
-# wandb login
-# enter the API key when prompted
-# you can also use WANDB_MODE=offline in training if you don't need logging
-
-git clone https://github.com/NVIDIA/MinkowskiEngine.git
-sudo apt install libopenblas-dev
-export CUDA_HOME=/usr/local/cuda-11.7
-(cd MinkowskiEngine; python setup.py install --blas=openblas)
-
-git clone https://github.com/nkolot/nflows.git
-pip install -e nflows/
-
-pip install numpy==1.23.0 # You can ignore the version conflict between graspnetAPI and numpy
-# for gripper experiments, if the ap result is significantly low, there might be a bug in graspnetapi's np.matmul. please update numpy to 1.24.1 and replace the np.float to float whenever there is AttributeError: module 'numpy' has no attribute 'float' and all np.int to int whenever there is AttributeError: module 'numpy' has no attribute 'int'. Only two files need to be modified
-# this might happen in some cpu
-
-pip install PyOpenGL
-pip install glfw
-pip install pyglm
-
-pip install healpy
-pip install rtree
+# If you already cloned without --recursive:
+git submodule update --init --recursive
 ```
 
-## Data
-
-Download data from https://huggingface.co/datasets/lhrlhr/DexGraspNet2.0, then unzip them and put them in the data directory.
-
-Users from Chinese mainland can download using mirrors like https://hf-mirror.com/
-
-The data architecture should be:
-
-```
-data/
-    meshdata/
-    acronym_test_scenes/
-    scenes/
-    dex_graspness_new/ (you can also generate using src/preprocess/dex_graspness.py)
-    dex_grasps_new/
-    gripper_graspness/
-    gripper_grasps/
-    meshdata/
-    models/ (link to meshdata)
-```
-
-## Checkpoints
-
-Download the checkpoints in the dataset link.
-
-## Preprocessing
-
+### 2. Create conda environment
 
 ```bash
-# Gripper (you can download gripper_grasps and gripper_graspness instead)
-python src/preprocess/extract_gripper_grasp.py --start 0 --end 100 # require graspnet data
-python src/preprocess/refine_dataset.py
-python src/preprocess/gripper_graspness.py --start 0 --end 100
-# Dexterous hand: compute graspness (you can download dex_graspness_new and dex_grasps_new instead)
-python src/preprocess/dex_graspness.py --start 0 --end 100
-python src/preprocess/dex_graspness.py --start 1000 --end 8500 # split this if you have multiple GPUs
+conda create -n cad python=3.11
+conda activate cad
 ```
+
+### 3. Install PyTorch
 
 ```bash
-# compute edges for evaluation
-python src/preprocess/compute_edges.py --dataset graspnet --start 100 --end 190
-python src/preprocess/compute_edges.py --dataset graspnet --start 200 --end 380
-python src/preprocess/compute_edges.py --dataset graspnet --start 9000 --end 9900
-python src/preprocess/compute_edges.py --dataset acronym 
+# Install PyTorch with CUDA support (adjust for your CUDA version)
+# For CUDA 12.1:
+pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
+
+# Or use Chinese mirror for faster download:
+pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121 -i https://pypi.tuna.tsinghua.edu.cn/simple
 ```
+
+### 4. Install CADGrasp package
 
 ```bash
-# collect network input for evaluation 
-python src/preprocess/compute_network_input_all.py --dataset graspnet --scene_id_start 100 --scene_id_end 190
-python src/preprocess/compute_network_input_all.py --dataset graspnet --scene_id_start 200 --scene_id_end 380
-python src/preprocess/compute_network_input_all.py --dataset graspnet --scene_id_start 9000 --scene_id_end 9900
-python src/preprocess/compute_network_input_all.py --dataset acronym 
+pip install -e .
 ```
+
+### 5. Install PyTorch3D
 
 ```bash
-bash IBSProcessing/scripts/evaluate_grasps.py
-bash IBSProcessing/scripts/batch_cal_ibs.py
-bash IBSProcessing/scripts/annotate_ibs_for_view.py
+# Option 1: Install via conda (recommended)
+conda install pytorch3d -c pytorch3d
+
+# Option 2: Build from source
+pip install "git+https://github.com/facebookresearch/pytorch3d.git@stable"
 ```
 
-## Training
+### 6. Install TorchSDF (for SDF computation)
+
+TorchSDF requires CUDA compilation. Make sure `CUDA_HOME` is set correctly:
 
 ```bash
-cd LASDiffusion
-bash train.sh
+cd thirdparty/TorchSDF
+export CUDA_HOME=/usr/local/cuda  # Adjust to your CUDA path
+pip install -e . --no-build-isolation
+cd ../..
 ```
 
-## Evaluation
+### 7. Install MinkowskiEngine (for sparse convolutions)
+
+For **CUDA 12.x** compatibility, we use a patched fork:
 
 ```bash
-python src/eval/predict_dexterous_all_cates.py --ckpt experiments/cad/ckpt/ckpt_50000.pth 
+cd thirdparty/MinkowskiEngine
+mkdir -p MinkowskiEngineBackend  # Required directory
+export CUDA_HOME=/usr/local/cuda  # Adjust to your CUDA path
+pip install . --no-build-isolation  # Do not add -e because Backend will fail to compile
+cd ../..
 ```
+
+> **Note**: The MinkowskiEngine submodule points to [MinkowskiEngineCuda13](https://github.com/AzharSindhi/MinkowskiEngineCuda13), which includes fixes for CUDA 12/13 compatibility.
+
+### 8. Install IsaacGym (optional, for simulation)
+
+Download IsaacGym from [NVIDIA](https://developer.nvidia.com/isaac-gym) and install:
 
 ```bash
-# evaluate dexterous grasping poses in IsaacGym
-python src/eval/evaluate_dexterous_all_cates.py # fill the ckpt path in ckpt_path_list in evaluate_dexterous_all.py. It is quicker to evaluate multiple checkpoints together
+cd isaacgym/python && pip install -e .
 ```
+
+### Troubleshooting
+
+**TorchSDF/MinkowskiEngine compilation fails:**
+- Ensure `CUDA_HOME` points to your CUDA installation (e.g., `/usr/local/cuda-12.4`)
+- Use `--no-build-isolation` flag to use existing PyTorch
+- Check that `nvcc --version` matches your PyTorch CUDA version
+
+**RTX 50 series (sm_120) not supported:**
+- Current PyTorch only supports up to sm_90 (RTX 40 series)
+- The code will still compile and work on these GPUs using PTX fallback
+
+## Project Structure
+
+```
+CADGrasp/
+├── src/cadgrasp/              # Main Python package
+│   ├── baseline/              # DexGraspNet 2.0 baseline models
+│   │   ├── network/           # Neural network architectures
+│   │   ├── eval/              # Evaluation scripts
+│   │   ├── preprocess/        # Data preprocessing
+│   │   └── utils/             # Utilities (robot model, visualization, etc.)
+│   ├── ibs/                   # IBS data processing
+│   │   ├── scripts/           # IBS computation scripts
+│   │   └── utils/             # IBS utilities
+│   ├── optimizer/             # Pose optimization with IBS
+│   └── evaluator/             # End-to-end evaluation pipeline
+├── thirdparty/
+│   └── LASDiffusion/          # IBS voxel diffusion model (git submodule)
+├── configs/                   # Hydra/YAML configuration files
+├── assets/                    # Robot URDF models and meshes
+├── data/                      # Datasets (download separately)
+│   ├── scenes/                # GraspNet-1Billion scenes
+│   ├── meshdata/              # Object meshes
+│   └── ibs/                   # Generated IBS data
+├── experiments/               # Experiment scripts and examples
+│   ├── scripts/               # Bash scripts for experiments
+│   ├── tests/                 # Visualization and test scripts
+│   └── examples/              # Example code
+└── pyproject.toml             # Package configuration
+```
+
+## Quick Start
+
+### Train IBS Diffusion Model
 
 ```bash
-# print the dexterous grasping's simulation result
-python src/eval/print_dexterous_result.py --ckpt experiments/cad/ckpt/ckpt_50000.pth
+cd thirdparty/LASDiffusion
+python train.py train_from_folder \
+    --name LEAP_dif \
+    --ibs_path ../../data/ibs/ibsdata \
+    --scene_pc_path ../../data/scenes \
+    --batch_size 64 --training_epoch 200000
 ```
 
+### Run End-to-End Evaluation
+
+```bash
+python -m cadgrasp.evaluator.predict
+```
+
+### Visualize Results
+
+```bash
+python experiments/tests/visualize_dex_pred.py --ckpt_path path/to/checkpoint.pth
+```
+
+### CADGrasp Prediction Pipeline
+
+Run the full CADGrasp prediction pipeline (DexGraspNet2.0 → IBS → Optimization):
+
+```bash
+# Predict on GraspNet scenes (starting from scene_0100)
+python -m cadgrasp.baseline.eval.predict_dexterous \
+    --ckpt_path data/DexGraspNet2.0/DexGraspNet2.0-ckpts/CAD/ckpt/ckpt_50000.pth \
+    --las_exp_name LEAP_dif \
+    --scene_id scene_0100 \
+    --scene_num 10 \
+    --top_n 5 \
+    --dataset graspnet
+```
+
+**Key parameters:**
+- `--ckpt_path`: DexGraspNet2.0 checkpoint for grasp point and rotation prediction
+- `--las_exp_name`: LASDiffusion experiment name (model in `thirdparty/LASDiffusion/results/{name}/recent/last.ckpt`)
+- `--top_n`: Number of top grasp candidates per view for IBS prediction (default: 5)
+- `--diffusion_steps`: Number of diffusion steps for IBS generation (default: 50)
+- `--max_iters`: Maximum pose optimization iterations (default: 200)
+- `--parallel_num`: Number of parallel optimizations per IBS (default: 10)
+
+Results will be saved to `data/DexGraspNet2.0/DexGraspNet2.0-ckpts/CAD/results/`.
+
+## Data Preparation
+
+### Download DexGraspNet 2.0 Data
+
+```bash
+# Download from HuggingFace
+huggingface-cli download lhrlhr/DexGraspNet2.0 --local-dir data/
+```
+
+### Setup CADGrasp Checkpoint Directory
+
+After downloading the data, create a separate checkpoint directory for CADGrasp predictions:
+
+```bash
+# Copy the OURS checkpoint to CAD directory
+cp -r data/DexGraspNet2.0/DexGraspNet2.0-ckpts/OURS data/DexGraspNet2.0/DexGraspNet2.0-ckpts/CAD
+```
+
+This ensures CADGrasp results are saved separately from baseline results.
+
+### Generate IBS Data
+
+**快速批量生成 (推荐)**：只需三条命令即可完成从原始抓取数据到IBS训练数据的全流程：
+
+```bash
+# 1. 仿真筛选 - 使用IsaacGym筛选成功抓取 (可选，需安装IsaacGym)
+python src/cadgrasp/ibs/scripts/batch_filter_grasps.py --scene_start 0 --scene_end 100 --gpu_ids 0,1,2,3
+
+# 2. FPS采样 - 对每个场景的抓取进行FPS降采样 (跳过第1步会默认所有抓取成功)
+python src/cadgrasp/ibs/scripts/batch_fps_sample_grasps.py --scene_start 0 --scene_end 100
+
+# 3. IBS计算 - 生成IBS体素数据到data/ibsdata/
+python src/cadgrasp/ibs/scripts/batch_calculate_ibs.py --scene_start 0 --scene_end 100
+```
+
+> 详细参数说明和单场景调试请参考 [src/cadgrasp/ibs/scripts/README.md](src/cadgrasp/ibs/scripts/README.md)
+
+## IBS Data Format
+
+| File | Shape | Description |
+|------|-------|-------------|
+| `data/ibs/ibsdata/ibs/scene_xxxx.npy` | `(N, 40, 40, 40, 3)` bool | IBS voxels: occupancy, contact, thumb_contact |
+| `data/ibs/ibsdata/w2h_trans/scene_xxxx.npy` | `(N, 4, 4)` float32 | World-to-hand transforms |
+| `data/ibs/scene_valid_ids/scene_xxxx/view_yyyy.npy` | `(N,)` bool | Per-view visibility masks |
+
+## Module Reference
+
+### cadgrasp.baseline
+DexGraspNet 2.0 baseline implementation with graspness prediction and grasp generation.
+
+### cadgrasp.ibs
+IBS (Interaction Bisector Surface) computation from grasp data.
+
+### cadgrasp.optimizer
+Adam-based pose optimization using IBS energy functions.
+
+### cadgrasp.evaluator
+End-to-end evaluation combining LASDiffusion prediction and pose optimization.
+
+### thirdparty.LASDiffusion
+3D voxel diffusion model for IBS prediction from scene point clouds.
 
 ## Citation
 
-```
-@inproceedings{zhang2024CADGraspnet,
-  title={CADGrasp: Learning Contact and Collision Aware General Dexterous Grasping in Cluttered Scenes},
-  author={Zhang, Jiyao and Ma, Zhiyuan and Wu, Tianhao and Chen, Zeyuan and Dong, Hao},
-  booktitle={39th Annual Conference on Neural Information Processing Systems},
-  year={2025}
+```bibtex
+@article{cadgrasp2024,
+  title={CADGrasp: Contact and Collision Aware Dexterous Grasping with Interaction Bisector Surface},
+  author={...},
+  year={2024}
 }
 ```
 
 ## License
-This work and the dataset are licensed under [CC BY-NC 4.0][cc-by-nc].
 
-[![CC BY-NC 4.0][cc-by-nc-image]][cc-by-nc]
-
-[cc-by-nc]: https://creativecommons.org/licenses/by-nc/4.0/
-[cc-by-nc-image]: https://licensebuttons.net/l/by-nc/4.0/88x31.png
+MIT License

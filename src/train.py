@@ -1,9 +1,6 @@
 import os
 import sys
 
-os.chdir(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-sys.path.append(os.path.realpath('.'))
-
 import argparse
 from pprint import pprint
 from tqdm import trange
@@ -12,11 +9,11 @@ from torch.utils.data import DataLoader
 from torch.optim.lr_scheduler import CosineAnnealingLR
 from math import sqrt
 
-from src.network.model import get_model
-from src.utils.dataset import GraspNetDataset, Loader, minkowski_collate_fn
-from src.utils.logger import Logger
-from src.utils.config import load_config, add_argparse
-from src.utils.util import set_seed
+from cadgrasp.baseline.network.model import get_model
+from cadgrasp.baseline.utils.dataset import GraspNetDataset, Loader, minkowski_collate_fn
+from cadgrasp.baseline.utils.logger import Logger
+from cadgrasp.baseline.utils.config import load_config, add_argparse
+from cadgrasp.baseline.utils.util import set_seed
 
 arg_mapping = [
     # (key in console, (key in config, type, default value))

@@ -1,45 +1,79 @@
-# Third party & build
-/thirdparty
+# ============================================
+# CADGrasp .gitignore
+# ============================================
+
+# ==== Python ====
 __pycache__/
 *.pyc
 *.pyo
+*.pyd
 *.so
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
 
-# Large files & installers
-*.ckpt
-*.tar.bz2
-*.run
-Miniconda3-*.sh
-
-# Data directories (download separately)
+# ==== Data Directories ====
+# All data should be downloaded separately via data/hfd.sh
 /data/
+
+# ==== Large Model Files ====
+*.ckpt
+*.pth
+*.pt
+*.onnx
+*.tar.bz2
+*.tar.gz
+*.zip
+
+# ==== Outputs & Results ====
 /outputs/
 /results/
 /logs/
 /experiments/
+/wandb/
 
-# CADGrasp large data (download separately)
-IBSGrasp/ibsdata/
-IBSGrasp/scene_valid_ids/
-IBSGrasp/runs/
-LASDiffusion/results/
-LASDiffusion/outputs/
-PoseOptimize/hand_assets/
+# ==== Log Files ====
+*.log
+*.txt
+!README.txt
+!requirements.txt
 
-# Temporary files
+# ==== Visualization Outputs ====
 *.html
-*.png
+/visualize/
+/figure/*.png
+
+# ==== Third Party Build Artifacts ====
+# torchprimitivesdf is tracked as submodule, ignore its build outputs
+/thirdparty/torchprimitivesdf/build/
+/thirdparty/torchprimitivesdf/*.egg-info/
+/thirdparty/MinkowskiEngine/build/
+/thirdparty/MinkowskiEngine/*.egg-info/
+/thirdparty/TorchSDF/build/
+/thirdparty/TorchSDF/*.egg-info/
+
+# ==== Temporary & Generated Files ====
+tmp/
+temp/
 test_file
 a.py
 
-# IDE
+# ==== IDE & Editor ====
 .vscode/
 .idea/
+*.swp
+*.swo
+*~
 
-# OS
+# ==== OS Files ====
 .DS_Store
+Thumbs.db
 
-# Project specific - intermediate outputs
-/send_to_yaoge/
-/visualize/
-/info/
+# ==== Installers ====
+*.run
+Miniconda3-*.sh
+
+# ==== Project Specific ====
+my_work_flow.md

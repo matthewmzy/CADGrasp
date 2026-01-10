@@ -1,8 +1,18 @@
+"""
+Visualize DexGrasp Network Predictions.
+
+Load a trained dexterous grasping network checkpoint and visualize predicted grasps.
+This script requires a trained baseline model checkpoint.
+
+Note: This script depends on the baseline network code and data paths.
+Ensure data/scenes is properly linked or configured.
+
+Usage:
+    python tests/visualize_dex_pred.py --ckpt_path path/to/ckpt.pth --scene scene_0055
+"""
+
 import os
 import sys
-
-os.chdir(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-sys.path.append(os.path.realpath('.'))
 
 import argparse
 import numpy as np
@@ -12,12 +22,12 @@ import plotly.express as px
 from pytorch3d import transforms as pttf
 from pytorch3d.ops import sample_farthest_points
 
-from src.utils.vis_plotly import Vis
-from src.utils.config import ckpt_to_config
-from src.network.model import get_model
-from src.utils.dataset import get_sparse_tensor
-from src.utils.util import pack_17dgrasp, unpack_17dgrasp, set_seed
-from src.utils.robot_info import GRIPPER_NEW_DEPTH
+from cadgrasp.baseline.utils.vis_plotly import Vis
+from cadgrasp.baseline.utils.config import ckpt_to_config
+from cadgrasp.baseline.network.model import get_model
+from cadgrasp.baseline.utils.dataset import get_sparse_tensor
+from cadgrasp.baseline.utils.util import pack_17dgrasp, unpack_17dgrasp, set_seed
+from cadgrasp.baseline.utils.robot_info import GRIPPER_NEW_DEPTH
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--ckpt_path', type=str, required=True)

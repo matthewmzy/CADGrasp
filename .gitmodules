@@ -1,0 +1,12 @@
+[submodule "thirdparty/LASDiffusion"]
+	path = thirdparty/LASDiffusion
+	url = https://github.com/matthewmzy/LASDiffusion.git
+[submodule "thirdparty/TorchSDF"]
+	path = thirdparty/TorchSDF
+	url = https://github.com/wrc042/TorchSDF.git
+[submodule "thirdparty/MinkowskiEngine"]
+	path = thirdparty/MinkowskiEngine
+	url = https://github.com/AzharSindhi/MinkowskiEngineCuda13.git
+[submodule "thirdparty/torchprimitivesdf"]
+	path = thirdparty/torchprimitivesdf
+	url = https://github.com/mzhmxzh/torchprimitivesdf.git
