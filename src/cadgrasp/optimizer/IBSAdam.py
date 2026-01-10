@@ -14,8 +14,7 @@ from cadgrasp.optimizer.visualize import plot_point_cloud, plot_point_cloud_dis
 from cadgrasp.optimizer.utils_hand_meta import *
 from cadgrasp.optimizer.rot6d import add_transform_perturbation
 from cadgrasp.optimizer.ibs_func import IBSFilter, visualize_point_clouds
-from LASDiffusion.utils.visualize_ibs_vox import get_ibs_pc
-from LASDiffusion.utils.visualize_ibs_vox import get_ibs_pc, devoxelize
+
 
 import torch.nn.functional as F
 

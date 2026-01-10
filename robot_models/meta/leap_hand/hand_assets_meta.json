@@ -7,13 +7,5 @@
     },
     "penetration_keypoints": {
         "leap_hand": "robot_models/meta/leap_hand/penetration_keypoints.json"
-    },
-    "w2h_trans": {
-        "leap_hand": [
-            [1.0, 0.0, 0.0, 0.0],
-            [0.0, 1.0, 0.0, 0.0],
-            [0.0, 0.0, 1.0, 0.0],
-            [0.0, 0.0, 0.0, 1.0]
-        ]
     }
 }

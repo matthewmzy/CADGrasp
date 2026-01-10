@@ -149,7 +149,8 @@ def visualize_k3d_optimization(
     q_trajectory: torch.Tensor,
     hand_name: str,
     save_path: str,
-    device: str = 'cuda'
+    device: str = 'cuda',
+    traj_subsample: int = 10  # Subsample trajectory to reduce file size
 ):
     """
     Create interactive k3d visualization of optimization trajectory.
@@ -160,12 +161,19 @@ def visualize_k3d_optimization(
         hand_name: Hand model name
         save_path: Path to save HTML
         device: Device for hand model
+        traj_subsample: Subsample factor for trajectory (default 10, keep every 10th frame)
     """
     cprint(f"[Test] Creating visualization for {len(ibs_triplets)} IBS...", 'cyan')
     
     hand_model = get_handmodel(hand_name, 1, device)
     num_ibs = len(ibs_triplets)
-    traj_len = q_trajectory.shape[1]
+    
+    # Subsample trajectory to reduce file size
+    traj_indices = list(range(0, q_trajectory.shape[1], traj_subsample))
+    if traj_indices[-1] != q_trajectory.shape[1] - 1:
+        traj_indices.append(q_trajectory.shape[1] - 1)  # Always include last frame
+    traj_len = len(traj_indices)
+    cprint(f"[Test] Subsampling trajectory: {q_trajectory.shape[1]} -> {traj_len} frames", 'cyan')
     
     plot = k3d.plot()
     
@@ -173,21 +181,35 @@ def visualize_k3d_optimization(
     ibs_colors = [0xff0000, 0x00ff00, 0x0000ff, 0xffff00, 0xff00ff]
     hand_colors = [0xff6666, 0x66ff66, 0x6666ff, 0xffff66, 0xff66ff]
     
+    # Subsample IBS points to reduce file size
+    max_ibs_points = 512
+    max_contact_points = 64
+    
     # Add static IBS point clouds
     for i, (ibs_occu, ibs_cont, ibs_thumb) in enumerate(ibs_triplets):
-        offset = np.array([i * 0.3, 0, 0])  # Offset for visualization
+        offset = np.array([i * 0.3, 0, 0], dtype=np.float32)
         
-        # IBS occupancy
-        occu_pts = ibs_occu[:, :3] + offset
-        plot += k3d.points(occu_pts.astype(np.float32), color=0x808080, point_size=0.002, name=f'IBS_{i}_occu')
+        # IBS occupancy (subsample if too many)
+        if len(ibs_occu) > max_ibs_points:
+            indices = np.random.choice(len(ibs_occu), max_ibs_points, replace=False)
+            ibs_occu_sub = ibs_occu[indices]
+        else:
+            ibs_occu_sub = ibs_occu
+        occu_pts = (ibs_occu_sub[:, :3] + offset).astype(np.float32)
+        plot += k3d.points(occu_pts, color=0x808080, point_size=0.002, name=f'IBS_{i}_occu')
         
-        # Contact points
-        cont_pts = ibs_cont[:, :3] + offset
-        plot += k3d.points(cont_pts.astype(np.float32), color=ibs_colors[i % len(ibs_colors)], point_size=0.004, name=f'IBS_{i}_contact')
+        # Contact points (subsample if too many)
+        if len(ibs_cont) > max_contact_points:
+            indices = np.random.choice(len(ibs_cont), max_contact_points, replace=False)
+            ibs_cont_sub = ibs_cont[indices]
+        else:
+            ibs_cont_sub = ibs_cont
+        cont_pts = (ibs_cont_sub[:, :3] + offset).astype(np.float32)
+        plot += k3d.points(cont_pts, color=ibs_colors[i % len(ibs_colors)], point_size=0.004, name=f'IBS_{i}_contact')
         
-        # Thumb contact
-        thumb_pts = ibs_thumb[:, :3] + offset
-        plot += k3d.points(thumb_pts.astype(np.float32), color=0x00ffff, point_size=0.005, name=f'IBS_{i}_thumb')
+        # Thumb contact (usually small, no subsample)
+        thumb_pts = (ibs_thumb[:, :3] + offset).astype(np.float32)
+        plot += k3d.points(thumb_pts, color=0x00ffff, point_size=0.005, name=f'IBS_{i}_thumb')
     
     # Add animated hand meshes
     mesh_objects = []
@@ -195,44 +217,32 @@ def visualize_k3d_optimization(
     thumb_pts_objects = []
     
     for i in range(num_ibs):
-        offset = np.array([i * 0.3, 0, 0])
+        offset = np.array([i * 0.3, 0, 0], dtype=np.float32)
         
         # Get initial frame mesh
-        q_init = q_trajectory[i, 0].unsqueeze(0)
+        q_init = q_trajectory[i, traj_indices[0]].unsqueeze(0)
         mesh_data = hand_model.get_k3d_data(q=q_init, i=0, opacity=0.7, color=hand_colors[i % len(hand_colors)], concat=True)
         
-        # Build animation dict
+        # Build animation dict (using subsampled trajectory)
         vertices_dict = {}
-        for t in range(traj_len):
+        for frame_idx, t in enumerate(traj_indices):
             q_t = q_trajectory[i, t].unsqueeze(0)
             mesh_t = hand_model.get_k3d_data(q=q_t, i=0, opacity=0.7, color=hand_colors[i % len(hand_colors)], concat=True)
-            vertices_dict[str(t)] = mesh_t.vertices + offset.astype(np.float32)
+            # Ensure float32 for k3d
+            verts = mesh_t.vertices.astype(np.float32) + offset
+            vertices_dict[str(frame_idx)] = verts
         
+        # Ensure initial vertices and indices are correct dtype
         mesh_data.vertices = vertices_dict
+        mesh_data.indices = mesh_data.indices.astype(np.uint32)
         plot += mesh_data
         mesh_objects.append(mesh_data)
         
-        # Contact points animation
-        pts_data, thumb_data = hand_model.get_palmar_points_k3d(i=0)
-        
-        pts_dict = {}
-        thumb_pts_dict = {}
-        for t in range(traj_len):
-            q_t = q_trajectory[i, t].unsqueeze(0)
-            hand_model.update_kinematics(q=q_t)
-            pts_t, thumb_t = hand_model.get_palmar_points_k3d(i=0)
-            pts_dict[str(t)] = pts_t.positions + offset.astype(np.float32)
-            thumb_pts_dict[str(t)] = thumb_t.positions + offset.astype(np.float32)
-        
-        pts_data.positions = pts_dict
-        thumb_data.positions = thumb_pts_dict
-        
-        plot += pts_data
-        plot += thumb_data
-        pts_objects.append(pts_data)
-        thumb_pts_objects.append(thumb_data)
+        # Contact points animation (skip to reduce file size - not essential for visualization)
+        # The hand mesh already shows the pose, contact points add ~2x data
     
-    plot.fps = 30
+    # Adjust fps based on subsample rate
+    plot.fps = max(5, 30 // traj_subsample)
     
     # Save HTML
     os.makedirs(os.path.dirname(save_path), exist_ok=True)
@@ -256,6 +266,7 @@ def main():
     parser.add_argument('--lr', type=float, default=5e-3, help='Learning rate')
     parser.add_argument('--mu', type=float, default=1.0, help='Friction coefficient')
     parser.add_argument('--output_dir', type=str, default='logs/test_optimizer')
+    parser.add_argument('--traj_subsample', type=int, default=10, help='Trajectory subsample factor for visualization')
     parser.add_argument('--seed', type=int, default=42)
     args = parser.parse_args()
     
@@ -328,7 +339,8 @@ def main():
         q_trajectory=q_trajectory,
         hand_name=args.hand_name,
         save_path=save_path,
-        device=str(device)
+        device=str(device),
+        traj_subsample=args.traj_subsample
     )
     
     # Save energy curves

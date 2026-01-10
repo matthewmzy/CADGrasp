@@ -1,7 +1,4 @@
 import json
-import os
-import sys
-
 import numpy as np
 import pytorch_kinematics as pk
 import torch
@@ -11,13 +8,10 @@ import trimesh as tm
 import transforms3d
 import urdf_parser_py.urdf as URDF_PARSER
 from pytorch_kinematics.urdf_parser_py.urdf import URDF, Box, Cylinder, Mesh, Sphere
-from typing import Union, Tuple, Dict
 from torchsdf import index_vertices_by_faces, compute_sdf
 from cadgrasp.optimizer.rot6d import robust_compute_rotation_matrix_from_ortho6d
 from xml.dom.minidom import parse
-# from cadgrasp.optimizer.utils_math import *
 import pytorch3d.ops
-from termcolor import cprint
 
 
 def get_handmodel(robot, batch_size, device, hand_scale=1., use_collision=False, urdf_assets_meta_path="robot_models/meta/leap_hand/hand_assets_meta.json", sample_density=4e6):
@@ -39,15 +33,10 @@ class HandModel:
         self.use_collision = use_collision
         self.xml_filename = urdf_assets_meta['xml_path'][hand_name]
         self.urdf_path = urdf_assets_meta['urdf_path'][hand_name]
-        self.redundant_joints = urdf_assets_meta['redundant_joints'][hand_name]
         self.penetration_keypoints_meta = urdf_assets_meta['penetration_keypoints'][hand_name]
-        self.finger_distals_meta = urdf_assets_meta['finger_distals'][hand_name]
-        self.w2h_trans_meta = urdf_assets_meta['w2h_trans'][hand_name]
 
         # Build the kinematic chain from the URDF
         self.robot = pk.build_chain_from_urdf(open(self.urdf_path).read()).to(dtype=torch.float, device=self.device)
-        # self.robot_sdf = pv.RobotSDF(self.robot, path_prefix='',
-                                    #  link_sdf_cls=pv.cache_link_sdf_factory(resolution=0.005, padding=0.5, device=self.device))
         self.robot_full = URDF_PARSER.URDF.from_xml_file(self.urdf_path)
 
         # Initialize revolute joints properties
@@ -64,22 +53,12 @@ class HandModel:
         self.global_translation = None
         self.global_rotation = None
         self.scale = scale
-        # self.hand_center_meta = torch.tensor(self.hand_center_meta, dtype=torch.float, device=self.device).unsqueeze(0).repeat(self.batch_size, 1)
-        # self.hand_normal_meta = torch.tensor(self.hand_normal_meta, dtype=torch.float, device=self.device).unsqueeze(0).repeat(self.batch_size, 1)
-        # self.hand_pointer_meta = torch.tensor(self.hand_pointer_meta, dtype=torch.float, device=self.device).unsqueeze(0).repeat(self.batch_size, 1)
-        self.w2h_trans_meta = torch.tensor(self.w2h_trans_meta, dtype=torch.float, device=self.device).unsqueeze(0).repeat(self.batch_size, 1, 1)
-        # self.hand_center = self.hand_center_meta.clone()
-        # self.hand_normal = self.hand_normal_meta.clone()
-        # self.hand_pointer = self.hand_pointer_meta.clone()
-        self.w2h_trans = self.w2h_trans_meta.clone()
+        
+        # Default world-to-hand transformation (identity matrix)
+        # This is used by IBSAdam to compute initial pose
+        self.w2h_trans_meta = torch.eye(4, dtype=torch.float, device=self.device).unsqueeze(0).repeat(self.batch_size, 1, 1)
+        
         self.penetration_keypoints = json.load(open(self.penetration_keypoints_meta, 'r'))
-        try:
-            self.finger_distals = json.load(open(self.finger_distals_meta, 'r'))
-            self.finger_num = len([finger for finger in self.finger_distals if self.finger_distals[finger][0] != 'None'])
-        except FileNotFoundError:
-            self.finger_distals = {}
-            self.finger_num = 0
-            cprint(f"Warning: {self.finger_distals_meta} not found, using default finger distals.", 'yellow')
 
         # sample surface points
         self.surface_points = {}
@@ -102,7 +81,7 @@ class HandModel:
                 components = link.collisions
             else:
                 components = link.visuals
-            if len(components) == 0 or link.name in self.redundant_joints:
+            if len(components) == 0:
                 continue
             meshes = []
             for i in range(len(components)):
@@ -157,16 +136,12 @@ class HandModel:
             self.mesh_face_verts[link.name] = index_vertices_by_faces(torch.tensor(self.mesh_verts[link.name],device=self.device), torch.tensor(self.mesh_faces[link.name],device=self.device))
             
             pts, pts_face_index = tm.sample.sample_surface(mesh=mesh, count=self.sample_counts[link.name]*20)
-            # print(f'link: {link.name} has pts shape :{pts.shape}, mesh volume: {mesh.volume}')
             pts_normal = np.array([mesh.face_normals[x] for x in pts_face_index], dtype=float)
             pts = torch.tensor(pts, dtype=torch.float, device=self.device).unsqueeze(0)
             pts, indices = pytorch3d.ops.sample_farthest_points(pts, K=self.sample_counts[link.name])
             pts = pts[0].detach().cpu().numpy()
             indices = indices[0].detach().cpu().numpy()
             pts_normal = pts_normal[indices]
-
-            if link.name in self.redundant_joints:
-                continue
 
             # Apply transformations
             pts *= self.scale
@@ -198,8 +173,6 @@ class HandModel:
             if self.mesh_volumes[name] < 1e-7:
                 continue
             assert name in self.links, f"Link {name} not in the URDF file"
-            if name in self.redundant_joints:
-                continue
             link = name
             point_tmp = []
             normal_tmp = []
@@ -224,24 +197,11 @@ class HandModel:
             self.palmar_surface_points[link] = torch.cat([point_tmp, torch.ones([1, point_tmp.shape[1], 1], device=self.device)], dim=-1).repeat(self.batch_size, 1, 1)
             self.palmar_surface_points_normal[link] = torch.cat([normal_tmp, torch.ones([1, normal_tmp.shape[1], 1], device=self.device)], dim=-1).repeat(self.batch_size, 1, 1)
              
-        # l = list(self.palmar_surface_points.keys())[0]
-        # print(f'palmar: {self.palmar_surface_points[l].shape}')
-        # print(f'surface: {self.surface_points[l].shape}')
-
     def update_kinematics(self, q):
         """Update the kinematic chain with new joint angles"""
         self.global_translation = q[:, :3]
         self.global_rotation = robust_compute_rotation_matrix_from_ortho6d(q[:, 3:9])
         self.current_status = self.robot.forward_kinematics(q[:, 9:])
-
-    def get_w2h_trans(self, q=None):
-        if q is not None:
-            self.update_kinematics(q=q)
-        global_transform = torch.eye(4, device=self.device).unsqueeze(0).repeat(self.batch_size, 1, 1)
-        global_transform[:, :3, :3] = self.global_rotation
-        global_transform[:, :3, 3] = self.global_translation
-        self.w2h_trans = torch.bmm(global_transform, self.w2h_trans_meta)
-        return self.w2h_trans
 
     def get_surface_points_and_normals(self, q=None, palmar=False):
         if q is not None:
@@ -388,26 +348,6 @@ class HandModel:
         min_dis = torch.min(dis, dim=0)[0]
         return min_dis
 
-
-    def get_finger_distals(self, q=None):
-        if q is not None:
-            self.update_kinematics(q=q)
-        batch_size = self.batch_size
-        distals = torch.zeros((batch_size, 3, 3), dtype=torch.float, device=self.device)
-        for i, finger in enumerate(['thumb', 'index', 'pinky']):
-            link_name = self.finger_distals[finger][0]
-            if link_name == 'None':
-                continue
-            point = self.finger_distals[finger][1]
-            points = torch.tensor(point, dtype=torch.float, device=self.device).unsqueeze(0).repeat(batch_size, 1)
-            transform = self.current_status[link_name].get_matrix()
-            points = torch.cat([points, torch.ones(batch_size, 1, dtype=torch.float, device=self.device)], dim=1)
-            points = (transform @ points.unsqueeze(2))[:, :3, 0]
-            points = (points.unsqueeze(1) @ self.global_rotation.transpose(1, 2)).squeeze() + self.global_translation
-            distals[:, i, :] = points
-        return distals
-        # return torch.zeros((batch_size, 5, 3), dtype=torch.float, device=self.device)
-    
     def get_meshes_from_q(self, q=None, i=0):
         data = []
         if q is not None: self.update_kinematics(q)
@@ -460,8 +400,8 @@ class HandModel:
             transformed_v = np.matmul(self.global_rotation[i].detach().cpu().numpy(),
                                       transformed_v.T).T + np.expand_dims(
                 self.global_translation[i].detach().cpu().numpy(), 0)
-            transformed_v = transformed_v * self.scale
-            f = self.mesh_faces[link_name]
+            transformed_v = (transformed_v * self.scale).astype(np.float32)
+            f = self.mesh_faces[link_name].astype(np.uint32)
             if concat:
                 verts.append(transformed_v)
                 faces.append(f + num_v)
@@ -471,13 +411,19 @@ class HandModel:
                     k3d.mesh(vertices=transformed_v[:, :3], indices=f, opacity=opacity, color=color)
                 )
         if concat:
-            return k3d.mesh(vertices=np.concatenate(verts, axis=0), indices=np.concatenate(faces, axis=0), opacity=opacity, color=color)
+            return k3d.mesh(
+                vertices=np.concatenate(verts, axis=0).astype(np.float32), 
+                indices=np.concatenate(faces, axis=0).astype(np.uint32), 
+                opacity=opacity, 
+                color=color
+            )
         return data
     
     def get_palmar_points_k3d(self, i=0, color1=0x000F0F, color2=0xFFF0F0, opacity=0.5):
         _,_,pts,_,thumb_pts,_ = self.get_surface_points_and_normals(palmar=True)
-        return k3d.points(pts[i, :, :3].detach().cpu().numpy(), point_size=0.003, color=color1, opacity=opacity), \
-            k3d.points(thumb_pts[i, :, :3].detach().cpu().numpy(), point_size=0.003, color=color2, opacity=opacity)
+        return k3d.points(pts[i, :, :3].detach().cpu().numpy().astype(np.float32), point_size=0.003, color=color1, opacity=opacity), \
+            k3d.points(thumb_pts[i, :, :3].detach().cpu().numpy().astype(np.float32), point_size=0.003, color=color2, opacity=opacity)
+
 
 if __name__ == '__main__':
     def plot_point_cloud(pts, color='lightblue', mode='markers', size=3.):
@@ -491,59 +437,35 @@ if __name__ == '__main__':
                 size=size
             )
         )
-    seed = 0
-    np.random.seed(seed)
-
-    # device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    
     device = torch.device('cpu')
-    # Ensure you have a function `get_handmodel` properly set to return an instance of `HandModel`.
-    hand_model_coll = get_handmodel('dex2leap',
-                                     1, 
-                                     'cpu', 
-                                     1., 
-                                     use_collision=True, 
-                                     urdf_assets_meta_path="robot_models/meta/leap_hand/hand_assets_meta.json",
-                                     sample_density=2e7)
-    hand_model_vis = get_handmodel('allegro', 
-                                   1, 
-                                   'cpu', 
-                                   1., 
-                                   use_collision=False, 
-                                   urdf_assets_meta_path="robot_models/meta/leap_hand/hand_assets_meta.json",
-                                   sample_density=2e7)
-    data = []
-    # for i,hand_model in enumerate([hand_model_coll, hand_model_vis]):
-    #     print(len(hand_model.robot.get_joint_parameter_names()))
-    #     print([link.name for link in hand_model.robot_full.links])
-
-    #     joint_lower = np.array(hand_model.revolute_joints_q_lower.cpu().reshape(-1))
-    #     joint_upper = np.array(hand_model.revolute_joints_q_upper.cpu().reshape(-1))
-    #     joint_mid = (joint_lower + joint_upper) / 2
-    #     joints_q = (joint_mid + joint_lower) / 2
-    #     if i == 0:
-    #         q = torch.from_numpy(np.concatenate([np.array([0.1, 10, 0, 1, 0, 0, 0, 1, 0]), joints_q])).unsqueeze(0).to(device).float()
-    #     else:
-    #         q = torch.from_numpy(np.concatenate([np.array([0, 0, 0, 1, 0, 0, 0, 1, 0]), joints_q])).unsqueeze(0).to(device).float()
-    #     surface_points, surface_normals = hand_model.get_surface_points_and_normals(q, palmar=False)
-    #     # print(f'surface_points: {surface_points.shape}')
-    #     # hand_center = hand_model.get_hand_center(q)
-    #     # print(f'hand_center: {hand_center.detach().cpu().tolist()}')
-    #     data += hand_model.get_plotly_data(q=q, opacity=0.5)
-
-    hand_model = hand_model_vis
-    print(hand_model.robot.get_joint_parameter_names())
-    print([link.name for link in hand_model.robot_full.links])
+    hand_model = get_handmodel(
+        'leap_hand', 1, device, 1., 
+        use_collision=False, 
+        urdf_assets_meta_path="robot_models/meta/leap_hand/hand_assets_meta.json",
+        sample_density=2e7
+    )
+    
+    print("Joint names:", hand_model.robot.get_joint_parameter_names())
+    print("Link names:", [link.name for link in hand_model.robot_full.links])
+    
     joint_lower = np.array(hand_model.revolute_joints_q_lower.cpu().reshape(-1))
     joint_upper = np.array(hand_model.revolute_joints_q_upper.cpu().reshape(-1))
     joint_mid = (joint_lower + joint_upper) / 2
     joints_q = (joint_mid + joint_lower) / 2
-    q = torch.from_numpy(np.concatenate([np.array([0, 0, 0, 1, 0, 0, 0, 1, 0]), joints_q])).unsqueeze(0).to(device).float()
-    data += hand_model.get_plotly_data(q=q, opacity=0.5)
-    surface_points, _, palmer_points, _, thumb_points, _  = hand_model.get_surface_points_and_normals(q, palmar=True)
-    data += [plot_point_cloud(surface_points.cpu().squeeze(0), color='yellow')]
-    data += [plot_point_cloud(palmer_points.cpu().squeeze(0), color='green')]
-    data += [plot_point_cloud(thumb_points.cpu().squeeze(0), color='blue')]
-    data += [plot_point_cloud(hand_model.get_self_penetration(q, get_points=True).cpu().squeeze(0), color='black', size=8)]
+    
+    q = torch.from_numpy(np.concatenate([
+        np.array([0, 0, 0, 1, 0, 0, 0, 1, 0]),  # translation (3) + rotation 6D (6)
+        joints_q
+    ])).unsqueeze(0).to(device).float()
+    
+    data = hand_model.get_plotly_data(q=q, opacity=0.5)
+    surface_points, _, palmar_points, _, thumb_points, _ = hand_model.get_surface_points_and_normals(q, palmar=True)
+    data += [plot_point_cloud(surface_points.cpu().squeeze(0).numpy(), color='yellow')]
+    data += [plot_point_cloud(palmar_points.cpu().squeeze(0).numpy(), color='green')]
+    data += [plot_point_cloud(thumb_points.cpu().squeeze(0).numpy(), color='blue')]
+    data += [plot_point_cloud(hand_model.get_self_penetration(q, get_points=True).cpu().squeeze(0).numpy(), color='black', size=8)]
+    
     fig = go.Figure(data=data)
     fig.show()
 
