@@ -72,7 +72,6 @@ DexGraspNet2.0数据 → 预处理(深度图转点云) → IsaacGym仿真筛选 
 - **输出**: 
   - `ibs/scene_XXXX.npy`: IBS体素数据 (N, 40, 40, 40, 3)
   - `w2h_trans/scene_XXXX.npy`: 世界坐标系到手坐标系变换矩阵
-  - `hand_dis/scene_XXXX.npy`: 手到IBS点的距离
 - **IBS体素通道**:
   - 通道0 (occupancy): IBS占用体素
   - 通道1 (contact): 接触区域
@@ -159,7 +158,7 @@ CADGrasp/
 │   │   ├── dex_grasps_new/         # 抓取标注
 │   │   ├── dex_grasps_success_indices/  # 仿真筛选后的成功索引
 │   │   └── fps_sampled_indices/    # FPS采样后的索引
-│   ├── ibsdata/                    # 生成的IBS数据(ibs/, w2h_trans/, hand_dis/)
+│   ├── ibsdata/                    # 生成的IBS数据(ibs/, w2h_trans/)
 │   └── hfd.sh                      # 数据下载脚本
 │
 ├── experiment_bashes/               # 实验脚本

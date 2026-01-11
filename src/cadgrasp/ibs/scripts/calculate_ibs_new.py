@@ -19,7 +19,6 @@ Input:
 Output:
     - data/ibsdata/ibs/scene_XXXX.npy: (N, 40, 40, 40, 3) IBS voxels
     - data/ibsdata/w2h_trans/scene_XXXX.npy: (N, 4, 4) transformations
-    - data/ibsdata/hand_dis/scene_XXXX.npy: (N, 40, 40, 40) hand distances
 
 Usage:
     python calculate_ibs_new.py scene_id=100 device=cuda:0
@@ -95,7 +94,6 @@ def compute_single_ibs(
     
     Returns:
         ibs_voxel: (40, 40, 40, 3) IBS voxel
-        hand_dis_voxel: (40, 40, 40) hand distance voxel
     """
     bound = config.bound
     resolution = config.resolution
@@ -175,11 +173,8 @@ def compute_single_ibs(
     
     # Combine channels: [occupancy, contact, thumb_contact]
     ibs_voxel = torch.cat([ibs_mask, contact_mask, thumb_contact_mask], dim=3)
-    hand_dis_voxel = hand_dis.reshape(voxel_size, voxel_size, voxel_size)
-    
-    return ibs_voxel, hand_dis_voxel
 
-
+    return ibs_voxel
 def calculate_ibs_for_scene(
     scene_id: int,
     grasp_base_path: str = 'data/DexGraspNet2.0/dex_grasps_new',
@@ -332,10 +327,9 @@ def calculate_ibs_for_scene(
     
     # Compute IBS for each grasp
     ibs_voxels = []
-    hand_dis_voxels = []
     
     for grasp_id in tqdm(range(batch_size), desc=f"Computing IBS for {scene_name}"):
-        ibs_voxel, hand_dis_voxel = compute_single_ibs(
+        ibs_voxel = compute_single_ibs(
             grasp_id=grasp_id,
             batch_points_tensor=batch_points_tensor,
             scene_surface_points=scene_surface_points_batch,
@@ -350,11 +344,9 @@ def calculate_ibs_for_scene(
         )
         
         ibs_voxels.append(ibs_voxel)
-        hand_dis_voxels.append(hand_dis_voxel)
     
     # Stack results
     ibs_voxels = torch.stack(ibs_voxels)  # (B, 40, 40, 40, 3)
-    hand_dis_voxels = torch.stack(hand_dis_voxels)  # (B, 40, 40, 40)
     
     # Free GPU memory
     torch.cuda.empty_cache()
@@ -362,7 +354,6 @@ def calculate_ibs_for_scene(
     # Create output directories
     os.makedirs(os.path.join(output_base_path, 'ibs'), exist_ok=True)
     os.makedirs(os.path.join(output_base_path, 'w2h_trans'), exist_ok=True)
-    os.makedirs(os.path.join(output_base_path, 'hand_dis'), exist_ok=True)
     
     # Save results
     np.save(
@@ -372,10 +363,6 @@ def calculate_ibs_for_scene(
     np.save(
         os.path.join(output_base_path, 'w2h_trans', f'{scene_name}.npy'),
         world_to_hand_coord_transforms.cpu().numpy()
-    )
-    np.save(
-        os.path.join(output_base_path, 'hand_dis', f'{scene_name}.npy'),
-        hand_dis_voxels.cpu().numpy()
     )
     
     # Compute statistics

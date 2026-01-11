@@ -66,7 +66,6 @@ class IBS:
         self,
         voxel: Optional[Union[np.ndarray, torch.Tensor]] = None,
         w2h_trans: Optional[Union[np.ndarray, torch.Tensor]] = None,
-        hand_dis: Optional[Union[np.ndarray, torch.Tensor]] = None,
         config: Optional[IBSConfig] = None,
         device: str = 'cpu'
     ):
@@ -76,7 +75,6 @@ class IBS:
         Args:
             voxel: (40, 40, 40, 3) IBS voxel data
             w2h_trans: (4, 4) world to hand transformation
-            hand_dis: (40, 40, 40) distance to hand surface (optional)
             config: IBSConfig object
             device: torch device
         """
@@ -99,14 +97,6 @@ class IBS:
         else:
             self.w2h_trans = None
         
-        # Optional: hand distance field
-        if hand_dis is not None:
-            if isinstance(hand_dis, np.ndarray):
-                hand_dis = torch.from_numpy(hand_dis)
-            self.hand_dis = hand_dis.to(device)
-        else:
-            self.hand_dis = None
-        
         # Cache for point cloud representation
         self._point_cloud_cache = None
         self._contact_points_cache = None
@@ -119,7 +109,6 @@ class IBS:
         cls,
         ibs_path: str,
         w2h_trans_path: str,
-        hand_dis_path: Optional[str] = None,
         index: int = 0,
         device: str = 'cpu'
     ) -> 'IBS':
@@ -129,7 +118,6 @@ class IBS:
         Args:
             ibs_path: Path to IBS voxel file (.npy)
             w2h_trans_path: Path to w2h transformation file (.npy)
-            hand_dis_path: Optional path to hand distance file (.npy)
             index: Index of the IBS in the batch
             device: torch device
         
@@ -147,15 +135,7 @@ class IBS:
             voxel = ibs_data
             w2h_trans = w2h_data
         
-        hand_dis = None
-        if hand_dis_path is not None and os.path.exists(hand_dis_path):
-            hand_dis_data = np.load(hand_dis_path)
-            if hand_dis_data.ndim == 4:  # (N, 40, 40, 40)
-                hand_dis = hand_dis_data[index]
-            else:
-                hand_dis = hand_dis_data
-        
-        return cls(voxel=voxel, w2h_trans=w2h_trans, hand_dis=hand_dis, device=device)
+        return cls(voxel=voxel, w2h_trans=w2h_trans, device=device)
     
     @classmethod
     def from_voxel(
@@ -470,7 +450,6 @@ class IBS:
             'num_thumb_contact_points': self.num_thumb_contact_points(),
             'voxel_shape': tuple(self.voxel.shape) if self.voxel is not None else None,
             'has_w2h_trans': self.w2h_trans is not None,
-            'has_hand_dis': self.hand_dis is not None,
         }
     
     # ==================== Manipulation ====================
@@ -482,8 +461,6 @@ class IBS:
             self.voxel = self.voxel.to(device)
         if self.w2h_trans is not None:
             self.w2h_trans = self.w2h_trans.to(device)
-        if self.hand_dis is not None:
-            self.hand_dis = self.hand_dis.to(device)
         # Clear cache
         self._point_cloud_cache = None
         self._contact_points_cache = None
@@ -495,7 +472,6 @@ class IBS:
         return IBS(
             voxel=self.voxel.clone() if self.voxel is not None else None,
             w2h_trans=self.w2h_trans.clone() if self.w2h_trans is not None else None,
-            hand_dis=self.hand_dis.clone() if self.hand_dis is not None else None,
             config=self.config,
             device=self.device
         )
@@ -522,7 +498,6 @@ class IBSBatch:
         self,
         voxels: Optional[Union[np.ndarray, torch.Tensor]] = None,
         w2h_trans: Optional[Union[np.ndarray, torch.Tensor]] = None,
-        hand_dis: Optional[Union[np.ndarray, torch.Tensor]] = None,
         config: Optional[IBSConfig] = None,
         device: str = 'cpu'
     ):
@@ -532,7 +507,6 @@ class IBSBatch:
         Args:
             voxels: (B, 40, 40, 40, 3) batched voxel data
             w2h_trans: (B, 4, 4) batched transformations
-            hand_dis: (B, 40, 40, 40) batched hand distances
             config: IBSConfig
             device: torch device
         """
@@ -554,31 +528,19 @@ class IBSBatch:
             self.w2h_trans = w2h_trans.float().to(device)
         else:
             self.w2h_trans = None
-        
-        if hand_dis is not None:
-            if isinstance(hand_dis, np.ndarray):
-                hand_dis = torch.from_numpy(hand_dis)
-            self.hand_dis = hand_dis.to(device)
-        else:
-            self.hand_dis = None
     
     @classmethod
     def from_file(
         cls,
         ibs_path: str,
         w2h_trans_path: str,
-        hand_dis_path: Optional[str] = None,
         device: str = 'cpu'
     ) -> 'IBSBatch':
         """Load IBSBatch from numpy files."""
         voxels = np.load(ibs_path)
         w2h_trans = np.load(w2h_trans_path)
         
-        hand_dis = None
-        if hand_dis_path is not None and os.path.exists(hand_dis_path):
-            hand_dis = np.load(hand_dis_path)
-        
-        return cls(voxels=voxels, w2h_trans=w2h_trans, hand_dis=hand_dis, device=device)
+        return cls(voxels=voxels, w2h_trans=w2h_trans, device=device)
     
     @classmethod
     def from_ibs_list(cls, ibs_list: List[IBS], device: str = 'cpu') -> 'IBSBatch':
@@ -589,13 +551,9 @@ class IBSBatch:
         voxels = torch.stack([ibs.voxel for ibs in ibs_list], dim=0)
         w2h_trans = torch.stack([ibs.w2h_trans for ibs in ibs_list], dim=0)
         
-        hand_dis = None
-        if all(ibs.hand_dis is not None for ibs in ibs_list):
-            hand_dis = torch.stack([ibs.hand_dis for ibs in ibs_list], dim=0)
-        
         config = ibs_list[0].config
         
-        return cls(voxels=voxels, w2h_trans=w2h_trans, hand_dis=hand_dis, config=config, device=device)
+        return cls(voxels=voxels, w2h_trans=w2h_trans, config=config, device=device)
     
     def __len__(self) -> int:
         return self.batch_size
@@ -605,7 +563,6 @@ class IBSBatch:
         return IBS(
             voxel=self.voxels[idx] if self.voxels is not None else None,
             w2h_trans=self.w2h_trans[idx] if self.w2h_trans is not None else None,
-            hand_dis=self.hand_dis[idx] if self.hand_dis is not None else None,
             config=self.config,
             device=self.device
         )
@@ -632,14 +589,12 @@ class IBSBatch:
         
         return torch.stack([ch0, ch1], dim=1)  # (B, 2, 40, 40, 40)
     
-    def save(self, ibs_path: str, w2h_trans_path: str, hand_dis_path: Optional[str] = None):
+    def save(self, ibs_path: str, w2h_trans_path: str):
         """Save IBSBatch to files."""
         if self.voxels is not None:
             np.save(ibs_path, self.voxels.cpu().numpy())
         if self.w2h_trans is not None:
             np.save(w2h_trans_path, self.w2h_trans.cpu().numpy())
-        if hand_dis_path is not None and self.hand_dis is not None:
-            np.save(hand_dis_path, self.hand_dis.cpu().numpy())
     
     def to(self, device: str) -> 'IBSBatch':
         """Move to device."""
@@ -648,8 +603,6 @@ class IBSBatch:
             self.voxels = self.voxels.to(device)
         if self.w2h_trans is not None:
             self.w2h_trans = self.w2h_trans.to(device)
-        if self.hand_dis is not None:
-            self.hand_dis = self.hand_dis.to(device)
         return self
     
     def get_statistics(self) -> dict:

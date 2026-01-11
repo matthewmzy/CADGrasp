@@ -43,24 +43,22 @@ def load_ibs_data(ibs_path: str, scene_id: int):
         scene_id: Scene ID
     
     Returns:
-        Tuple of (ibs_voxels, w2h_trans, hand_dis) or (None, None, None) if not found
+        Tuple of (ibs_voxels, w2h_trans) or (None, None) if not found
     """
     scene_name = f'scene_{str(scene_id).zfill(4)}'
     
     ibs_file = os.path.join(ibs_path, 'ibs', f'{scene_name}.npy')
     w2h_file = os.path.join(ibs_path, 'w2h_trans', f'{scene_name}.npy')
-    hand_dis_file = os.path.join(ibs_path, 'hand_dis', f'{scene_name}.npy')
     
     files = [ibs_file, w2h_file]
     if not all(os.path.exists(f) for f in files):
         print(f"IBS data not found for scene {scene_id} at {ibs_path}")
-        return None, None, None
+        return None, None
     
     ibs_voxels = np.load(ibs_file)  # (N, 40, 40, 40, 3)
     w2h_trans = np.load(w2h_file)   # (N, 4, 4)
-    hand_dis = np.load(hand_dis_file) if os.path.exists(hand_dis_file) else None
     
-    return ibs_voxels, w2h_trans, hand_dis
+    return ibs_voxels, w2h_trans
 
 
 def load_scene_pc(scene_path: str, scene_id: int, camera: str = 'realsense', view: str = '0000'):
@@ -95,7 +93,7 @@ def transform_points(points: np.ndarray, transform: np.ndarray):
 def visualize_ibs(args):
     """Main visualization function."""
     # Load IBS data
-    ibs_voxels, w2h_trans, hand_dis = load_ibs_data(args.ibs_path, args.scene_id)
+    ibs_voxels, w2h_trans = load_ibs_data(args.ibs_path, args.scene_id)
     if ibs_voxels is None:
         return
     

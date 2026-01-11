@@ -1,6 +1,6 @@
-# CADGrasp: Interaction Bisector Surface for Dexterous Grasping
+# CADGrasp: Learning Contact and Collision Aware General Dexterous Grasping in Cluttered Scenes 
 
-Contact- and collision-aware dexterous grasping pipeline that introduces **Interaction Bisector Surface (IBS)** as an intermediate representation. IBS captures equidistant points between hand and objects, enabling LASDiffusion to predict contact-aware voxels and PoseOptimize to recover feasible hand poses.
+Contact- and collision-aware dexterous grasping pipeline that introduces **Interaction Bisector Surface (IBS)** as an intermediate representation. We predict IBS given partial observation of cluttered scenes with a diffusion model and leverage gradient descend method to get dexterous hand grasp pose.
 
 ![image](./figure/teaser.png)
 
@@ -25,7 +25,7 @@ The repository includes 4 submodules in `thirdparty/`:
 ### 2. Create conda environment
 
 ```bash
-conda create -n cad python=3.11
+conda create -n cad python=3.8  # issacgym requires python<3.9
 conda activate cad
 ```
 
@@ -100,10 +100,6 @@ cd isaacgym/python && pip install -e .
 - Ensure `CUDA_HOME` points to your CUDA installation (e.g., `/usr/local/cuda-12.4`)
 - Use `--no-build-isolation` flag to use existing PyTorch
 - Check that `nvcc --version` matches your PyTorch CUDA version
-
-**RTX 50 series (sm_120) not supported:**
-- Current PyTorch only supports up to sm_90 (RTX 40 series)
-- The code will still compile and work on these GPUs using PTX fallback
 
 ---
 
@@ -253,30 +249,6 @@ CADGrasp/
 
 ---
 
-## IBS Data Format
-
-| File | Shape | Description |
-|------|-------|-------------|
-| `data/ibsdata/ibs/scene_xxxx.npy` | `(N, 40, 40, 40, 3)` bool | IBS voxels: occupancy, contact, thumb_contact |
-| `data/ibsdata/w2h_trans/scene_xxxx.npy` | `(N, 4, 4)` float32 | World-to-hand transforms |
-| `data/ibsdata/hand_dis/scene_xxxx.npy` | `(N,)` float32 | Hand-to-IBS distances |
-
----
-
-## Tools and Utilities
-
-### Visualization Scripts (tests/)
-
-See [tests/README.md](tests/README.md) for detailed usage.
-
-| Script | Description |
-|--------|-------------|
-| `visualize_scene.py` | Visualize scene meshes with object poses |
-| `visualize_dex_grasp.py` | Visualize grasp annotations |
-| `vis_ibs.py` | Visualize IBS voxel data |
-| `vis_fps_grasps.py` | Visualize FPS-sampled grasp points |
-| `visualize_dex_pred.py` | Visualize network predictions |
-| `count_data.py` | Count data at each pipeline stage |
 
 ### Hand Model Tools (tests/hand_info/)
 
