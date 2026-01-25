@@ -58,7 +58,7 @@ def load_scene_extrinsics(scene_id: int, camera: str = 'realsense') -> np.ndarra
     """Load cam0_wrt_table (world to table transform)."""
     scene_name = f'scene_{str(scene_id).zfill(4)}'
     extrinsics_path = project_path(
-        'data/DexGraspNet2.0/scenes', scene_name, camera, 'cam0_wrt_table.npy'
+        'data/scenes', scene_name, camera, 'cam0_wrt_table.npy'
     )
     return np.load(extrinsics_path)  # (4, 4)
 
@@ -73,7 +73,7 @@ def load_scene_pc(scene_id: int, view: int = 0, camera: str = 'realsense') -> Tu
         extrinsics: (4, 4) camera-to-table transform
     """
     scene_name = f'scene_{str(scene_id).zfill(4)}'
-    pc_file = project_path('data/DexGraspNet2.0/scenes', scene_name, camera, 'network_input.npz')
+    pc_file = project_path('data/scenes', scene_name, camera, 'network_input.npz')
     
     data = np.load(pc_file)
     pc = data['pc'][view]           # (40000, 3) in camera frame
@@ -90,8 +90,8 @@ def load_grasp_data_for_scene(scene_id: int) -> Dict[str, np.ndarray]:
     scene_name = f'scene_{str(scene_id).zfill(4)}'
     grasp_data, _ = load_fps_grasps_for_scene(
         scene_name, 'leap_hand',
-        grasp_base_path=project_path('data/DexGraspNet2.0/dex_grasps_new'),
-        fps_base_path=project_path('data/DexGraspNet2.0/fps_sampled_indices'),
+        grasp_base_path=project_path('data/dex_grasps_new'),
+        fps_base_path=project_path('data/fps_sampled_indices'),
         return_object_ids=True
     )
     return grasp_data
@@ -106,7 +106,7 @@ def load_scene_meshes(scene_id: int, camera: str = 'realsense', view: int = 0) -
     """
     scene_name = f'scene_{str(scene_id).zfill(4)}'
     annotation_file = project_path(
-        'data/DexGraspNet2.0/scenes', scene_name, camera, 
+        'data/scenes', scene_name, camera, 
         'annotations', f'{str(view).zfill(4)}.xml'
     )
     
@@ -130,7 +130,7 @@ def load_scene_meshes(scene_id: int, camera: str = 'realsense', view: int = 0) -
         
         # Load mesh
         mesh_path = project_path(
-            'data/DexGraspNet2.0/meshdata', 
+            'data/meshdata', 
             str(obj_id).zfill(3), 
             'nontextured.ply'
         )

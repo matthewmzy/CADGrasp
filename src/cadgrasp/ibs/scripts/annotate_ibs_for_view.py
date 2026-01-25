@@ -54,7 +54,7 @@ np.seterr(all='raise')
 
 # ============ Default Paths ============
 DEFAULT_IBS_PATH = 'data/ibsdata'
-DEFAULT_SCENE_PATH = 'data/DexGraspNet2.0/scenes'
+DEFAULT_SCENE_PATH = 'data/scenes'
 DEFAULT_OUTPUT_PATH = 'data/ibsdata/scene_valid_ids'
 
 # ============ Global Config (set by main) ============

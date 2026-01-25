@@ -2,7 +2,7 @@
 Visualize GraspNet Scene with Object Meshes.
 
 Load scene annotation and visualize object meshes with their poses.
-Uses data from data/DexGraspNet2.0/scenes and data/DexGraspNet2.0/meshdata.
+Uses data from data/scenes and data/meshdata.
 
 Usage:
     python tests/visualize_scene.py --scene_id 55
@@ -23,8 +23,8 @@ import plotly.express as px
 from cadgrasp.paths import project_path
 
 # Default paths (DexGraspNet2.0 structure)
-DEFAULT_SCENE_PATH = project_path('data/DexGraspNet2.0/scenes')
-DEFAULT_MESH_PATH = project_path('data/DexGraspNet2.0/meshdata')
+DEFAULT_SCENE_PATH = project_path('data/scenes')
+DEFAULT_MESH_PATH = project_path('data/meshdata')
 
 
 def load_scene_objects(scene_path: str, scene_id: str, camera: str = 'kinect', view: str = '0000'):

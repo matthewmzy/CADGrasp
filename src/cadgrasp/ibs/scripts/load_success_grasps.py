@@ -2,7 +2,7 @@
 Utility functions to load filtered successful grasps.
 
 This module provides functions to load grasp data using success indices
-from data/DexGraspNet2.0/dex_grasps_success_indices.
+from data/dex_grasps_success_indices.
 
 Example usage:
     from cadgrasp.ibs.scripts.load_success_grasps import load_success_grasps_for_scene
@@ -21,8 +21,8 @@ from termcolor import cprint
 def load_success_indices(
     scene_id: str,
     robot_name: str = 'leap_hand',
-    base_path: str = 'data/DexGraspNet2.0/dex_grasps_success_indices',
-    grasp_base_path: str = 'data/DexGraspNet2.0/dex_grasps_new',
+    base_path: str = 'data/dex_grasps_success_indices',
+    grasp_base_path: str = 'data/dex_grasps_new',
     default_all_success: bool = True
 ) -> Dict[str, np.ndarray]:
     """
@@ -78,8 +78,8 @@ def load_success_grasps_for_object(
     scene_id: str,
     object_id: str,
     robot_name: str = 'leap_hand',
-    grasp_base_path: str = 'data/DexGraspNet2.0/dex_grasps_new',
-    indices_base_path: str = 'data/DexGraspNet2.0/dex_grasps_success_indices',
+    grasp_base_path: str = 'data/dex_grasps_new',
+    indices_base_path: str = 'data/dex_grasps_success_indices',
     default_all_success: bool = True
 ) -> Optional[Dict[str, np.ndarray]]:
     """
@@ -139,8 +139,8 @@ def load_success_grasps_for_object(
 def load_success_grasps_for_scene(
     scene_id: str,
     robot_name: str = 'leap_hand',
-    grasp_base_path: str = 'data/DexGraspNet2.0/dex_grasps_new',
-    indices_base_path: str = 'data/DexGraspNet2.0/dex_grasps_success_indices',
+    grasp_base_path: str = 'data/dex_grasps_new',
+    indices_base_path: str = 'data/dex_grasps_success_indices',
     return_object_ids: bool = False,
     default_all_success: bool = True
 ) -> Tuple[Dict[str, np.ndarray], Optional[Dict[str, List[int]]]]:
@@ -218,8 +218,8 @@ def load_success_grasps_for_scene(
 def get_success_statistics(
     scene_id: str,
     robot_name: str = 'leap_hand',
-    grasp_base_path: str = 'data/DexGraspNet2.0/dex_grasps_new',
-    indices_base_path: str = 'data/DexGraspNet2.0/dex_grasps_success_indices'
+    grasp_base_path: str = 'data/dex_grasps_new',
+    indices_base_path: str = 'data/dex_grasps_success_indices'
 ) -> Dict[str, Dict[str, int]]:
     """
     Get statistics about successful grasps for a scene.

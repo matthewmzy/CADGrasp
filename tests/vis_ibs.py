@@ -26,7 +26,7 @@ from cadgrasp.paths import project_path
 
 # Default paths
 DEFAULT_IBS_PATH = project_path('data/ibsdata')
-DEFAULT_SCENE_PATH = project_path('data/DexGraspNet2.0/scenes')
+DEFAULT_SCENE_PATH = project_path('data/scenes')
 
 # IBS voxel parameters
 BOUND = 0.1

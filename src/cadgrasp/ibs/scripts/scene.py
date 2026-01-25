@@ -42,8 +42,8 @@ class SceneConfig:
     output_path: str = ''
     with_graspness: bool = False
     load_gt_ibs: bool = False
-    scene_base_path: str = 'data/DexGraspNet2.0/scenes'
-    mesh_base_path: str = 'data/DexGraspNet2.0/meshdata'
+    scene_base_path: str = 'data/scenes'
+    mesh_base_path: str = 'data/meshdata'
 
 
 class Scene:
@@ -88,8 +88,8 @@ class Scene:
         output_path: str = '',
         with_graspness: bool = False,
         load_gt_ibs: bool = False,
-        scene_base_path: str = 'data/DexGraspNet2.0/scenes',
-        mesh_base_path: str = 'data/DexGraspNet2.0/meshdata',
+        scene_base_path: str = 'data/scenes',
+        mesh_base_path: str = 'data/meshdata',
         **kwargs
     ):
         # Support both new-style kwargs and old-style DictConfig
@@ -156,8 +156,8 @@ class Scene:
         self.num_samples = getattr(cfg, 'num_samples', 4096)
         self.load_gt_ibs = getattr(cfg, 'load_gt_ibs', False)
         self.device = getattr(cfg, 'device', 'cuda:0')
-        self.scene_base_path = getattr(cfg, 'scene_base_path', 'data/DexGraspNet2.0/scenes')
-        self.mesh_base_path = getattr(cfg, 'mesh_base_path', 'data/DexGraspNet2.0/meshdata')
+        self.scene_base_path = getattr(cfg, 'scene_base_path', 'data/scenes')
+        self.mesh_base_path = getattr(cfg, 'mesh_base_path', 'data/meshdata')
 
     def calculate_mesh_pc(self):
         """Calculate mesh point clouds for all objects in the scene."""

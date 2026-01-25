@@ -2,8 +2,8 @@
 Batch script to filter successful grasps using IsaacGym simulation.
 
 This script processes multiple scenes in parallel using multiple GPUs.
-It reads grasp data from data/DexGraspNet2.0/dex_grasps_new and saves
-success indices to data/DexGraspNet2.0/dex_grasps_success_indices.
+It reads grasp data from data/dex_grasps_new and saves
+success indices to data/dex_grasps_success_indices.
 
 Usage:
     python src/cadgrasp/ibs/scripts/batch_filter_grasps.py --scene_start 0 --scene_end 100
@@ -33,7 +33,7 @@ np.seterr(all='raise')
 
 
 def get_scene_ids_with_grasps(
-    base_path: str = 'data/DexGraspNet2.0/dex_grasps_new',
+    base_path: str = 'data/dex_grasps_new',
     scene_start: int = 0,
     scene_end: int = 10000
 ):
@@ -105,10 +105,10 @@ def main():
     parser.add_argument('--scene_end', type=int, default=10000, help='End scene ID')
     parser.add_argument('--robot_name', type=str, default='leap_hand', help='Robot name')
     parser.add_argument('--input_base', type=str,
-                        default='data/DexGraspNet2.0/dex_grasps_new',
+                        default='data/dex_grasps_new',
                         help='Path to input grasp data')
     parser.add_argument('--output_base', type=str,
-                        default='data/DexGraspNet2.0/dex_grasps_success_indices',
+                        default='data/dex_grasps_success_indices',
                         help='Path to save success indices')
     parser.add_argument('--evaluator_config', type=str,
                         default='configs/data_evaluator/leap_hand/SimulationEvaluator.yaml',

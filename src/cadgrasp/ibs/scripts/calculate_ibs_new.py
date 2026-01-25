@@ -13,8 +13,8 @@ The IBS computation algorithm:
 6. Mark thumb contact regions separately
 
 Input:
-    - data/DexGraspNet2.0/dex_grasps_new/scene_XXXX/leap_hand/XXX.npz
-    - data/DexGraspNet2.0/fps_sampled_indices/scene_XXXX/leap_hand/XXX.npz
+    - data/dex_grasps_new/scene_XXXX/leap_hand/XXX.npz
+    - data/fps_sampled_indices/scene_XXXX/leap_hand/XXX.npz
 
 Output:
     - data/ibsdata/ibs/scene_XXXX.npy: (N, 40, 40, 40, 3) IBS voxels
@@ -177,11 +177,11 @@ def compute_single_ibs(
     return ibs_voxel
 def calculate_ibs_for_scene(
     scene_id: int,
-    grasp_base_path: str = 'data/DexGraspNet2.0/dex_grasps_new',
-    fps_indices_path: str = 'data/DexGraspNet2.0/fps_sampled_indices',
+    grasp_base_path: str = 'data/dex_grasps_new',
+    fps_indices_path: str = 'data/fps_sampled_indices',
     output_base_path: str = 'data/ibsdata',
-    scene_base_path: str = 'data/DexGraspNet2.0/scenes',
-    mesh_base_path: str = 'data/DexGraspNet2.0/meshdata',
+    scene_base_path: str = 'data/scenes',
+    mesh_base_path: str = 'data/meshdata',
     urdf_path: str = 'robot_models/urdf/leap_hand_simplified.urdf',
     meta_path: str = 'robot_models/meta/leap_hand/meta.yaml',
     device: str = 'cuda:0',
@@ -384,19 +384,19 @@ def main():
     parser = argparse.ArgumentParser(description='Calculate IBS for a scene')
     parser.add_argument('--scene_id', type=int, default=55, help='Scene ID')
     parser.add_argument('--grasp_base_path', type=str, 
-                        default='data/DexGraspNet2.0/dex_grasps_new',
+                        default='data/dex_grasps_new',
                         help='Path to grasp data')
     parser.add_argument('--fps_indices_path', type=str,
-                        default='data/DexGraspNet2.0/fps_sampled_indices',
+                        default='data/fps_sampled_indices',
                         help='Path to FPS indices')
     parser.add_argument('--output_base_path', type=str,
                         default='data/ibsdata',
                         help='Path to save IBS data')
     parser.add_argument('--scene_base_path', type=str,
-                        default='data/DexGraspNet2.0/scenes',
+                        default='data/scenes',
                         help='Path to scene data')
     parser.add_argument('--mesh_base_path', type=str,
-                        default='data/DexGraspNet2.0/meshdata',
+                        default='data/meshdata',
                         help='Path to mesh data')
     parser.add_argument('--device', type=str, default='cuda:0', help='Device')
     parser.add_argument('--no_refinement', action='store_true',

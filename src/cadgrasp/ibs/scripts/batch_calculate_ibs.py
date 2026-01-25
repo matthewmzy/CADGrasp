@@ -23,7 +23,7 @@ from cadgrasp.paths import project_path
 
 
 def get_scene_ids_with_fps_indices(
-    fps_base_path: str = 'data/DexGraspNet2.0/fps_sampled_indices',
+    fps_base_path: str = 'data/fps_sampled_indices',
     robot_name: str = 'leap_hand',
     scene_start: int = 0,
     scene_end: int = 10000
@@ -59,19 +59,19 @@ def main():
     parser.add_argument('--scene_start', type=int, default=0, help='Start scene ID (inclusive)')
     parser.add_argument('--scene_end', type=int, default=10000, help='End scene ID (exclusive)')
     parser.add_argument('--grasp_path', type=str,
-                        default=project_path('data/DexGraspNet2.0/dex_grasps_new'),
+                        default=project_path('data/dex_grasps_new'),
                         help='Path to original grasp data')
     parser.add_argument('--fps_path', type=str,
-                        default=project_path('data/DexGraspNet2.0/fps_sampled_indices'),
+                        default=project_path('data/fps_sampled_indices'),
                         help='Path to FPS indices')
     parser.add_argument('--output_path', type=str,
                         default=project_path('data/ibsdata'),
                         help='Path to save IBS data')
     parser.add_argument('--scene_base_path', type=str,
-                        default=project_path('data/DexGraspNet2.0/scenes'),
+                        default=project_path('data/scenes'),
                         help='Path to scene data')
     parser.add_argument('--mesh_base_path', type=str,
-                        default=project_path('data/DexGraspNet2.0/meshdata'),
+                        default=project_path('data/meshdata'),
                         help='Path to mesh data')
     parser.add_argument('--urdf_path', type=str,
                         default=project_path('robot_models/urdf/leap_hand_simplified.urdf'),

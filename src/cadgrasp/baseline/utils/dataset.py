@@ -92,10 +92,7 @@ class GraspNetDataset(Dataset):
             path = os.path.join('data', 'scenes', scene, self.config.camera)
             depth = np.array(Image.open(os.path.join(path, 'depth'+suffix, str_view + '.png')))
             seg = np.array(Image.open(os.path.join(path, 'label'+suffix, str_view + '.png')))
-            try:
-                edge = np.array(Image.open(os.path.join(path, 'edge'+suffix, str_view + '.png')))
-            except:
-                edge = None
+            # edge maps are not used; previously would load here
             meta = scio.loadmat(os.path.join(path, 'meta', str_view + '.mat'))
             instrincs = meta['intrinsic_matrix']
             factor_depth = meta['factor_depth']
@@ -127,8 +124,7 @@ class GraspNetDataset(Dataset):
                     'feats': np.ones_like(cloud).astype(np.float32), # (N, 3)
                     'seg': seg.astype(np.int64), # (N,)
                 }
-                if edge is not None:
-                    ret_dict['edge'] = edge[mask][idxs]
+                # no edge channel
                 return ret_dict
 
             frac_suffix = '' if self.config.fraction == 1 else f'_{self.config.fraction}'
@@ -246,6 +242,17 @@ class GraspNetDataset(Dataset):
                     'qpos': qpos.astype(np.float32), # (K, J)
                 })
             
+            if self.is_eval:
+                ret_dict = {
+                    'scene': np.array([int(scene.split('_')[-1])]),
+                    'view': np.array([view]),
+                    'point_clouds': cloud.astype(np.float32), # (N, 3)
+                    'coors': cloud.astype(np.float32) / self.config.voxel_size, # (N, 3)
+                    'feats': np.ones_like(cloud).astype(np.float32), # (N, 3)
+                    'seg': seg.astype(np.int64), # (N,)
+                }
+                return ret_dict
+
             if self.is_train:
                 ret_dict = self.augment_data(ret_dict)
 
@@ -255,7 +262,7 @@ class GraspNetDataset(Dataset):
             print(f'{cate} {scene} {view}')
             print(e)
             return self.__getitem__(random.randint(0, self.__len__() - 1))
-    
+
     def augment_data(self, ret_dict: dict):
         """
             Random rotate the point cloud and the gripper pose

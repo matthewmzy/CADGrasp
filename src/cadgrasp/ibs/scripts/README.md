@@ -21,9 +21,9 @@ dex_grasps_new/ ──► IsaacGym Sim ──► dex_grasps_success_indices/ ─
 | `batch_filter_grasps.py` | Multi-scene batch filtering | `python batch_filter_grasps.py --scene_start 0 --scene_end 100` |
 | `load_success_grasps.py` | Utility module: load filtered successful grasps | (import as module) |
 
-**Input**: `data/DexGraspNet2.0/dex_grasps_new/scene_XXXX/leap_hand/XXX.npz`
+**Input**: `data/dex_grasps_new/scene_XXXX/leap_hand/XXX.npz`
 
-**Output**: `data/DexGraspNet2.0/dex_grasps_success_indices/scene_XXXX/leap_hand/XXX.npz`
+**Output**: `data/dex_grasps_success_indices/scene_XXXX/leap_hand/XXX.npz`
 
 **Notes**: 
 - IsaacGym installation required for Stage 1
@@ -40,10 +40,10 @@ dex_grasps_new/ ──► IsaacGym Sim ──► dex_grasps_success_indices/ ─
 | `load_fps_grasps.py` | Utility module: load FPS-sampled grasps | (import as module) |
 
 **Input**: 
-- `data/DexGraspNet2.0/dex_grasps_new/scene_XXXX/leap_hand/XXX.npz`
-- `data/DexGraspNet2.0/dex_grasps_success_indices/scene_XXXX/leap_hand/XXX.npz` (optional)
+- `data/dex_grasps_new/scene_XXXX/leap_hand/XXX.npz`
+- `data/dex_grasps_success_indices/scene_XXXX/leap_hand/XXX.npz` (optional)
 
-**Output**: `data/DexGraspNet2.0/fps_sampled_indices/scene_XXXX/leap_hand/XXX.npz`
+**Output**: `data/fps_sampled_indices/scene_XXXX/leap_hand/XXX.npz`
 
 **Key Parameters**:
 - `--max_grasps`: Maximum grasps per scene (default: 5000)
@@ -59,7 +59,7 @@ dex_grasps_new/ ──► IsaacGym Sim ──► dex_grasps_success_indices/ ─
 | `batch_calculate_ibs.py` | Multi-scene batch computation | `python batch_calculate_ibs.py --scene_start 0 --scene_end 100` |
 
 **Input**:
-- `data/DexGraspNet2.0/fps_sampled_indices/scene_XXXX/leap_hand/XXX.npz`
+- `data/fps_sampled_indices/scene_XXXX/leap_hand/XXX.npz`
 - Scene data and object meshes
 
 **Output** (saved to `data/ibsdata/`):
@@ -76,7 +76,7 @@ dex_grasps_new/ ──► IsaacGym Sim ──► dex_grasps_success_indices/ ─
 
 **Input**: 
 - `data/ibsdata/` (IBS data)
-- `data/DexGraspNet2.0/scenes/` (scene point clouds)
+- `data/scenes/` (scene point clouds)
 
 **Output**: `data/ibsdata/scene_valid_ids/scene_XXXX/view_YYYY.npy`
 
@@ -167,8 +167,8 @@ SceneConfig(
     table_size=[0.6, 0.6, 0.0],
     device='cuda:0',
     num_samples=4096,
-    scene_base_path='data/DexGraspNet2.0/scenes',
-    mesh_base_path='data/DexGraspNet2.0/meshdata'
+    scene_base_path='data/scenes',
+    mesh_base_path='data/meshdata'
 )
 ```
 

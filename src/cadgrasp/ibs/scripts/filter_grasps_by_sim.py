@@ -1,17 +1,17 @@
 """
 Filter successful grasps using IsaacGym simulation.
 
-This script reads grasp data from data/DexGraspNet2.0/dex_grasps_new,
+This script reads grasp data from data/dex_grasps_new,
 evaluates them in IsaacGym simulation, and saves the indices of successful
-grasps to data/DexGraspNet2.0/dex_grasps_success_indices with the same
+grasps to data/dex_grasps_success_indices with the same
 directory structure.
 
 Usage:
     python src/cadgrasp/ibs/scripts/filter_grasps_by_sim.py scene_id=scene_0000
 
 Directory structure:
-    Input:  data/DexGraspNet2.0/dex_grasps_new/scene_XXXX/leap_hand/046.npz
-    Output: data/DexGraspNet2.0/dex_grasps_success_indices/scene_XXXX/leap_hand/046.npz
+    Input:  data/dex_grasps_new/scene_XXXX/leap_hand/046.npz
+    Output: data/dex_grasps_success_indices/scene_XXXX/leap_hand/046.npz
             (contains only 'success_indices' key with indices of successful grasps)
 """
 
@@ -36,7 +36,7 @@ from cadgrasp.baseline.utils.util import set_seed
 
 def load_scene_annotation(scene_id: str):
     """Load scene annotation and object poses."""
-    scene_path = os.path.join('data/DexGraspNet2.0/scenes', scene_id)
+    scene_path = os.path.join('data/scenes', scene_id)
     extrinsics_path = os.path.join(scene_path, 'realsense/cam0_wrt_table.npy')
     extrinsics = np.load(extrinsics_path)
     annotation_path = os.path.join(scene_path, 'realsense/annotations/0000.xml')
@@ -58,7 +58,7 @@ def load_scene_annotation(scene_id: str):
     # Load object surface points
     object_surface_points_dict = {}
     for object_code in object_pose_dict:
-        object_surface_points_path = os.path.join('data/DexGraspNet2.0/meshdata', 
+        object_surface_points_path = os.path.join('data/meshdata', 
             object_code, f'surface_points_1000.npy')
         object_surface_points = np.load(object_surface_points_path)
         object_pose = object_pose_dict[object_code]
@@ -148,8 +148,8 @@ def evaluate_grasps_for_object(
 def filter_grasps_for_scene(
     scene_id: str,
     robot_name: str = 'leap_hand',
-    input_base: str = 'data/DexGraspNet2.0/dex_grasps_new',
-    output_base: str = 'data/DexGraspNet2.0/dex_grasps_success_indices',
+    input_base: str = 'data/dex_grasps_new',
+    output_base: str = 'data/dex_grasps_success_indices',
     evaluator_config_path: str = 'configs/data_evaluator/leap_hand/SimulationEvaluator.yaml',
     device: str = 'cuda:0',
     batch_size: int = 100,
@@ -270,10 +270,10 @@ def main():
     parser.add_argument('--scene_id', type=str, default='scene_0000', help='Scene ID')
     parser.add_argument('--robot_name', type=str, default='leap_hand', help='Robot name')
     parser.add_argument('--input_base', type=str, 
-                        default='data/DexGraspNet2.0/dex_grasps_new',
+                        default='data/dex_grasps_new',
                         help='Path to input grasp data')
     parser.add_argument('--output_base', type=str,
-                        default='data/DexGraspNet2.0/dex_grasps_success_indices',
+                        default='data/dex_grasps_success_indices',
                         help='Path to save success indices')
     parser.add_argument('--evaluator_config', type=str,
                         default='configs/data_evaluator/leap_hand/SimulationEvaluator.yaml',

@@ -2,7 +2,7 @@
 Utility functions to load FPS-sampled grasps.
 
 This module provides functions to load grasp data using FPS indices
-from data/DexGraspNet2.0/fps_sampled_indices.
+from data/fps_sampled_indices.
 
 Example usage:
     from cadgrasp.ibs.scripts.load_fps_grasps import load_fps_grasps_for_scene
@@ -21,7 +21,7 @@ from termcolor import cprint
 def load_fps_indices(
     scene_id: str,
     robot_name: str = 'leap_hand',
-    fps_base_path: str = 'data/DexGraspNet2.0/fps_sampled_indices'
+    fps_base_path: str = 'data/fps_sampled_indices'
 ) -> Dict[str, np.ndarray]:
     """
     Load FPS indices for all objects in a scene.
@@ -53,8 +53,8 @@ def load_fps_grasps_for_object(
     scene_id: str,
     object_id: str,
     robot_name: str = 'leap_hand',
-    grasp_base_path: str = 'data/DexGraspNet2.0/dex_grasps_new',
-    fps_base_path: str = 'data/DexGraspNet2.0/fps_sampled_indices'
+    grasp_base_path: str = 'data/dex_grasps_new',
+    fps_base_path: str = 'data/fps_sampled_indices'
 ) -> Optional[Dict[str, np.ndarray]]:
     """
     Load FPS-sampled grasps for a single object.
@@ -105,8 +105,8 @@ def load_fps_grasps_for_object(
 def load_fps_grasps_for_scene(
     scene_id: str,
     robot_name: str = 'leap_hand',
-    grasp_base_path: str = 'data/DexGraspNet2.0/dex_grasps_new',
-    fps_base_path: str = 'data/DexGraspNet2.0/fps_sampled_indices',
+    grasp_base_path: str = 'data/dex_grasps_new',
+    fps_base_path: str = 'data/fps_sampled_indices',
     return_object_ids: bool = False
 ) -> Tuple[Dict[str, np.ndarray], Optional[Dict[str, List[int]]]]:
     """
@@ -176,8 +176,8 @@ def load_fps_grasps_for_scene(
 def get_fps_statistics(
     scene_id: str,
     robot_name: str = 'leap_hand',
-    grasp_base_path: str = 'data/DexGraspNet2.0/dex_grasps_new',
-    fps_base_path: str = 'data/DexGraspNet2.0/fps_sampled_indices'
+    grasp_base_path: str = 'data/dex_grasps_new',
+    fps_base_path: str = 'data/fps_sampled_indices'
 ) -> Dict[str, Dict[str, int]]:
     """
     Get statistics about FPS-sampled grasps for a scene.

@@ -1,7 +1,7 @@
 """
 Visualize DexGraspNet 2.0 Grasp Annotations.
 
-Visualize grasp data from data/DexGraspNet2.0/dex_grasps_new.
+Visualize grasp data from data/dex_grasps_new.
 Supports visualizing raw grasps, success-filtered grasps, or FPS-sampled grasps.
 
 Usage:
@@ -25,10 +25,10 @@ from cadgrasp.baseline.utils.util import set_seed
 from cadgrasp.paths import project_path
 
 # Default paths (DexGraspNet2.0 structure)
-DEFAULT_GRASP_PATH = project_path('data/DexGraspNet2.0/dex_grasps_new')
-DEFAULT_SUCCESS_PATH = project_path('data/DexGraspNet2.0/dex_grasps_success_indices')
-DEFAULT_FPS_PATH = project_path('data/DexGraspNet2.0/fps_sampled_indices')
-DEFAULT_SCENE_PATH = project_path('data/DexGraspNet2.0/scenes')
+DEFAULT_GRASP_PATH = project_path('data/dex_grasps_new')
+DEFAULT_SUCCESS_PATH = project_path('data/dex_grasps_success_indices')
+DEFAULT_FPS_PATH = project_path('data/fps_sampled_indices')
+DEFAULT_SCENE_PATH = project_path('data/scenes')
 
 
 def load_grasps(scene: str, robot_name: str, grasp_path: str, 

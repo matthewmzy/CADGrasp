@@ -12,7 +12,7 @@ Usage:
     
     # Get absolute path for a project-relative path
     urdf_path = project_path('robot_models/urdf/leap_hand.urdf')
-    data_path = project_path('data/DexGraspNet2.0/scenes')
+    data_path = project_path('data/scenes')
 """
 
 import os
@@ -55,8 +55,8 @@ def project_path(*paths: str) -> str:
     Example:
         >>> project_path('robot_models/urdf/leap_hand.urdf')
         '/path/to/CADGrasp/robot_models/urdf/leap_hand.urdf'
-        >>> project_path('data', 'DexGraspNet2.0', 'scenes')
-        '/path/to/CADGrasp/data/DexGraspNet2.0/scenes'
+        >>> project_path('data',  'scenes')
+        '/path/to/CADGrasp/data/scenes'
     """
     return str(get_project_root() / Path(*paths))
 

@@ -275,17 +275,13 @@ class Vis:
                             opacity: Optional[float] = None,
                             ):
         path = f'data/scenes/scene_0000/{camera}'
+        split = scene.split('_')[1]
+
         if mode == 'pc':
             # loading
-            split = scene.split('_')[1]
             depth = np.array(Image.open(os.path.join(f'data/acronym_test_scenes/test_acronym_{split}_depth_gt', camera, scene, str(view).zfill(4) + '.png')))
             seg = np.array(Image.open(os.path.join(f'data/acronym_test_scenes/test_acronym_{split}_label_gt', camera, scene, str(view).zfill(4) + '.png')))
-            edge_path = os.path.join(f'data/acronym_test_scenes/network_input_{split}', scene, camera, 'edge_gt', str(view).zfill(4) + '.png')
-            if os.path.exists(edge_path):
-                edge = np.array(Image.open(edge_path))
-            else:
-                print(f'edge not found: {edge_path}')
-                edge = np.zeros_like(depth)
+            # edge maps are not used; skip
             meta = scio.loadmat(os.path.join(path, 'meta', '0000.mat'))
             camera_poses = np.load(os.path.join(path, 'camera_poses.npy'))
             align_mat = np.load(os.path.join(path, 'cam0_wrt_table.npy'))
@@ -304,11 +300,9 @@ class Vis:
             mask = (depth_mask & workspace_mask)
             cloud = cloud[mask]
             seg = seg[mask]
-            edge = edge[mask]
             idxs = np.random.choice(len(cloud), num_points, replace=True)
             cloud = cloud[idxs]
             seg = seg[idxs]
-            edge = edge[idxs]
             if graspness_path is not None:
                 graspness = np.load(os.path.join('data', graspness_path, scene, camera, str(view).zfill(4) + '.npy'))
                 graspness = graspness.reshape(-1)
@@ -318,14 +312,13 @@ class Vis:
             for i, idx in enumerate(np.unique(seg)):
                 result += self.pc_plotly(torch.from_numpy(cloud[seg == idx]), size=1, color=px.colors.qualitative.Dark24[i])
             if with_pc:
-                list = [cloud, seg[:, None]]
+                arrs = [cloud, seg[:, None]]
                 if graspness_path is not None:
-                    list.append(graspness[:, None])
-                list.append(edge[:, None])
+                    arrs.append(graspness[:, None])
                 if with_extrinsics:
-                    return result, torch.from_numpy(np.concatenate(list, axis=-1)).float(), trans
+                    return result, torch.from_numpy(np.concatenate(arrs, axis=-1)).float(), trans
                 else:
-                    return result, torch.from_numpy(np.concatenate(list, axis=-1)).float()
+                    return result, torch.from_numpy(np.concatenate(arrs, axis=-1)).float()
             return result, None
         elif mode == 'model':
             align_mat = np.load(os.path.join(path, 'cam0_wrt_table.npy'))
@@ -340,7 +333,7 @@ class Vis:
                 pose = torch.from_numpy(np.linalg.inv(camera_pose) @ pose).float()
                 mesh_path = os.path.join('data/acronym/meshes/models', obj_idx, 'scaled.obj')
                 result += self.mesh_plotly(mesh_path, trans=pose[:3, 3], rot=pose[:3, :3], opacity=opacity)
-            
+
             table_mat = np.linalg.inv(camera_pose)
             table_trans = table_mat[:3, 3] - 0.05 * table_mat[:3, 2]
             result += self.box_plotly(np.array([1,1,0.1]), table_trans, table_mat[:3,:3], color='blue')
@@ -363,17 +356,12 @@ class Vis:
             if with_pc is True, return both pc and plotly
             pc: torch.tensor (N, 5) with (x, y, z, seg, graspness)
         """
-        path = project_path('data', 'DexGraspNet2.0', 'scenes', scene, camera)
+        path = project_path('data', 'scenes', scene, camera)
         gt_str = "_gt" * gt
         if mode == 'pc':
             # loading
             depth = np.array(Image.open(os.path.join(path, 'depth'+gt_str, str(view).zfill(4) + '.png')))
-            edge_path = os.path.join(path, 'edge'+gt_str, str(view).zfill(4) + '.png')
-            if os.path.exists(edge_path):
-                edge = np.array(Image.open(edge_path))
-            else:
-                print(f'edge not found: {edge_path}')
-                edge = np.zeros_like(depth)
+            # edge maps are not used; previously would load here
             seg = np.array(Image.open(os.path.join(path, 'label'+gt_str, str(view).zfill(4) + '.png')))
             meta = scio.loadmat(os.path.join(path, 'meta', str(view).zfill(4) + '.mat'))
             camera_poses = np.load(os.path.join(path, 'camera_poses.npy'))
@@ -389,12 +377,10 @@ class Vis:
             mask = (depth_mask & workspace_mask)
             cloud = cloud[mask]
             seg = seg[mask]
-            edge = edge[mask]
             # idxs = np.arange(len(cloud))
             idxs = np.random.choice(len(cloud), num_points, replace=True)
             cloud = cloud[idxs]
             seg = seg[idxs]
-            edge = edge[idxs]
             if graspness_path is not None:
                 graspness = np.load(project_path('data', graspness_path, scene, camera, str(view).zfill(4) + '.npy'))
                 graspness = graspness.reshape(-1)
@@ -407,7 +393,6 @@ class Vis:
                 list = [cloud, seg[:, None]]
                 if graspness_path is not None:
                     list.append(graspness[:, None])
-                list.append(edge[:, None])
                 if with_extrinsics:
                     return result, torch.from_numpy(np.concatenate(list, axis=-1)).float(), trans
                 else:
@@ -422,7 +407,7 @@ class Vis:
         view: str,
         camera: str = 'kinect',
     ):
-        path = project_path('data', 'DexGraspNet2.0', 'scenes', scene, camera)
+        path = project_path('data', 'scenes', scene, camera)
         camera_pose = np.load(os.path.join(path, 'camera_poses.npy'))[int(view)]
         align_mat = np.load(os.path.join(path, 'cam0_wrt_table.npy'))
         pose = np.linalg.inv(np.matmul(align_mat, camera_pose))

@@ -102,7 +102,6 @@ if __name__ == '__main__':
             network_input = dict(np.load(load_path))
             pc_all = torch.tensor(network_input['pc'], dtype=torch.float)
             seg_all = torch.tensor(network_input['seg'], dtype=torch.long)
-            edge_all = torch.tensor(network_input['edge'], dtype=torch.long)
             extrinsics_all = network_input['extrinsics']
             
             # voxelize
@@ -115,9 +114,8 @@ if __name__ == '__main__':
                     data_part = get_sparse_tensor(pc_all[i:i+stride], config.data.voxel_size)
                     data_part['seg'] = seg_all[i:i+stride]
                     data_part = {k: v.to(device) for k, v in data_part.items()}
-                    edge_part = edge_all[i:i+stride]
                     rotation, translation, qpos, score, obj_indices, graspness, log_prob = \
-                        (t.cpu() for t in model.sample(data_part, args.grasp_num, graspness_scale=5, allow_fail=True, cate=False, edge=edge_part.to(device), with_score_parts=True))
+                        (t.cpu() for t in model.sample(data_part, args.grasp_num, graspness_scale=5, allow_fail=True, cate=False, with_score_parts=True))
                     rotations.append(rotation)
                     translations.append(translation)
                     qposs.append(qpos)

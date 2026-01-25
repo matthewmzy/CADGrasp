@@ -33,7 +33,7 @@ if __name__ == '__main__':
     
     if args.dataset == 'graspnet':
         # not overwrite
-        save_path = path = project_path('data/DexGraspNet2.0/scenes', args.scene_id, args.camera, 'network_input.npz')
+        save_path = path = project_path('data/scenes', args.scene_id, args.camera, 'network_input.npz')
     elif args.dataset == 'acronym':
         if args.scene_id.split('_')[1] == 'dense':
             save_path = path = os.path.join('data/acronym_test_scenes/network_input_dense', args.scene_id, args.camera, 'network_input.npz')
@@ -57,7 +57,6 @@ if __name__ == '__main__':
     pc_all = []
     seg_all = []
     extrinsics_all = []
-    edge_all = []
     for view_id in track(view_id_list, 'loading'):
         if args.dataset == 'graspnet':
             _, pc, extrinsics = vis.scene_plotly(args.scene_id, view_id, args.camera, 
@@ -67,22 +66,19 @@ if __name__ == '__main__':
             with_pc=True, with_extrinsics=True, mode='pc', num_points=40000)
             #  vis.show(vis.pc_plotly(pc[:, :3]))
         seg = pc[:, 3].int()
-        edge = pc[:, 4].int()
         pc = pc[:, :3].float()
         pc_all.append(pc.numpy())
         seg_all.append(seg.numpy())
         extrinsics_all.append(extrinsics)
-        edge_all.append(edge.numpy())
     pc_all = np.stack(pc_all)
     seg_all = np.stack(seg_all)
     extrinsics_all = np.stack(extrinsics_all)
-    edge_all = np.stack(edge_all)
     
     # save network input
     network_input = {
         'pc': pc_all,
         'seg': seg_all,
         'extrinsics': extrinsics_all,
-        'edge': edge_all,
     }
+    os.makedirs(os.path.dirname(save_path), exist_ok=True)
     np.savez(save_path, **network_input)

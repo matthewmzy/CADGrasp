@@ -51,11 +51,11 @@ See [hand_info/README.md](hand_info/README.md) for interactive tools to edit:
 
 All scripts use the following default data paths:
 
-- **Scene data**: `data/DexGraspNet2.0/scenes/`
-- **Mesh data**: `data/DexGraspNet2.0/meshdata/`
-- **Raw grasps**: `data/DexGraspNet2.0/dex_grasps_new/`
-- **Success indices**: `data/DexGraspNet2.0/dex_grasps_success_indices/`
-- **FPS indices**: `data/DexGraspNet2.0/fps_sampled_indices/`
+- **Scene data**: `data/scenes/`
+- **Mesh data**: `data/meshdata/`
+- **Raw grasps**: `data/dex_grasps_new/`
+- **Success indices**: `data/dex_grasps_success_indices/`
+- **FPS indices**: `data/fps_sampled_indices/`
 - **IBS data**: `data/ibsdata/`
 
 ## Example Commands

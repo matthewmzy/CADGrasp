@@ -13,7 +13,7 @@ This script implements the CADGrasp prediction pipeline:
 
 Usage:
     python -m cadgrasp.baseline.eval.predict_dexterous \
-        --ckpt_path data/DexGraspNet2.0/DexGraspNet2.0-ckpts/CAD/ckpt/ckpt_50000.pth \
+        --ckpt_path data/DexGraspNet2.0-ckpts/CAD/ckpt/ckpt_50000.pth \
         --las_exp_name LEAP_dif \
         --scene_id scene_0100 \
         --dataset graspnet
@@ -185,7 +185,7 @@ def main():
     
     # Checkpoint paths
     parser.add_argument('--ckpt_path', type=str, 
-        default='data/DexGraspNet2.0/DexGraspNet2.0-ckpts/CAD/ckpt/ckpt_50000.pth',
+        default='data/DexGraspNet2.0-ckpts/CAD/ckpt/ckpt_50000.pth',
         help='Path to DexGraspNet2.0 checkpoint')
     parser.add_argument('--las_exp_name', type=str, default='LEAP_dif',
         help='LASDiffusion experiment name')
@@ -312,7 +312,7 @@ def main():
                 os.path.dirname(os.path.dirname(args.ckpt_path)), 
                 'results', scene_id, 'grasps.npz'
             )
-            load_path = os.path.join('data/DexGraspNet2.0/scenes', scene_id, args.camera, 'network_input.npz')
+            load_path = os.path.join('data/scenes', scene_id, args.camera, 'network_input.npz')
             
         elif args.dataset == 'acronym':
             all_scene_ids = args.all_scene_ids_acronym
@@ -340,7 +340,6 @@ def main():
             network_input = dict(np.load(load_path))
             pc_all = torch.tensor(network_input['pc'], dtype=torch.float)  # (256, N, 3)
             seg_all = torch.tensor(network_input['seg'], dtype=torch.long)
-            edge_all = torch.tensor(network_input['edge'], dtype=torch.long)
             extrinsics_all = network_input['extrinsics']  # (256, 4, 4)
             
             num_views = pc_all.shape[0]
@@ -353,13 +352,12 @@ def main():
                     data_part = get_sparse_tensor(pc_all[i:i+args.stride], config.data.voxel_size)
                     data_part['seg'] = seg_all[i:i+args.stride]
                     data_part = {k: v.to(device) for k, v in data_part.items()}
-                    edge_part = edge_all[i:i+args.stride]
                     
                     # with_point=True to get grasp_points (seed_points)
                     result = dex_model.sample(
-                        data_part, args.grasp_num, 
-                        graspness_scale=5, allow_fail=True, 
-                        cate=False, edge=edge_part.to(device), 
+                        data_part, args.grasp_num,
+                        graspness_scale=5, allow_fail=True,
+                        cate=False,
                         with_score_parts=True, with_point=True
                     )
                     # result: [rot, trans, joints, score, obj_indices, graspness, log_prob, seed_points]

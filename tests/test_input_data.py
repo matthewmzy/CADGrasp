@@ -257,7 +257,7 @@ def main():
     
     # Setup paths
     ibs_path = args.ibs_path or project_path('data/ibsdata')
-    scene_path = args.scene_path or project_path('data/DexGraspNet2.0/scenes')
+    scene_path = args.scene_path or project_path('data/scenes')
     
     print(f"Loading data from:")
     print(f"  IBS path: {ibs_path}")

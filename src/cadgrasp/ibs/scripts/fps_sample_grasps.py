@@ -5,11 +5,11 @@ This script performs FPS on successful grasps based on grasp points,
 with random perturbation to handle multiple grasps at the same point.
 
 Input: 
-    - data/DexGraspNet2.0/dex_grasps_new/scene_XXXX/leap_hand/XXX.npz
-    - data/DexGraspNet2.0/dex_grasps_success_indices/scene_XXXX/leap_hand/XXX.npz (optional)
+    - data/dex_grasps_new/scene_XXXX/leap_hand/XXX.npz
+    - data/dex_grasps_success_indices/scene_XXXX/leap_hand/XXX.npz (optional)
 
 Output:
-    - data/DexGraspNet2.0/fps_sampled_indices/scene_XXXX/leap_hand/XXX.npz
+    - data/fps_sampled_indices/scene_XXXX/leap_hand/XXX.npz
       (contains 'fps_indices' key - indices into success_indices or original grasps)
 
 Usage:
@@ -102,9 +102,9 @@ def fps_select_grasps(
 def process_scene(
     scene_id: int,
     robot_name: str = 'leap_hand',
-    grasp_base_path: str = 'data/DexGraspNet2.0/dex_grasps_new',
-    success_indices_path: str = 'data/DexGraspNet2.0/dex_grasps_success_indices',
-    output_base_path: str = 'data/DexGraspNet2.0/fps_sampled_indices',
+    grasp_base_path: str = 'data/dex_grasps_new',
+    success_indices_path: str = 'data/dex_grasps_success_indices',
+    output_base_path: str = 'data/fps_sampled_indices',
     max_grasps_per_scene: int = 5000,
     perturbation_scale: float = 0.02,
     device: str = 'cuda',
@@ -269,13 +269,13 @@ def main():
     parser.add_argument('--scene_id', type=int, required=True, help='Scene ID to process')
     parser.add_argument('--robot_name', type=str, default='leap_hand', help='Robot name')
     parser.add_argument('--grasp_path', type=str, 
-                        default='data/DexGraspNet2.0/dex_grasps_new',
+                        default='data/dex_grasps_new',
                         help='Path to original grasp data')
     parser.add_argument('--success_indices_path', type=str,
-                        default='data/DexGraspNet2.0/dex_grasps_success_indices',
+                        default='data/dex_grasps_success_indices',
                         help='Path to success indices')
     parser.add_argument('--output_path', type=str,
-                        default='data/DexGraspNet2.0/fps_sampled_indices',
+                        default='data/fps_sampled_indices',
                         help='Path to save FPS indices')
     parser.add_argument('--max_grasps', type=int, default=5000,
                         help='Maximum grasps per scene')

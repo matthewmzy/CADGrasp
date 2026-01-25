@@ -115,7 +115,11 @@ Download Data → Prepare Checkpoints → Data Processing → Train LASDiffusion
 
 ```bash
 # Download from HuggingFace
-huggingface-cli download lhrlhr/DexGraspNet2.0 --local-dir data/DexGraspNet2.0
+huggingface-cli download lhrlhr/DexGraspNet2.0 --local-dir data
+cd data
+find . -name "*.tar.gz" -exec tar -xzvf {} \;
+find . -name "*.tar" -exec tar -xvf {} \;
+cd ../..
 ```
 
 ### Step 2: Prepare Checkpoint Directory
@@ -124,7 +128,8 @@ Create a separate checkpoint directory for CADGrasp predictions:
 
 ```bash
 # Copy the OURS checkpoint to CAD directory
-cp -r data/DexGraspNet2.0/DexGraspNet2.0-ckpts/OURS data/DexGraspNet2.0/DexGraspNet2.0-ckpts/CAD
+mkdir -p data/DexGraspNet2.0-ckpts/CAD
+cp -r data/DexGraspNet2.0-ckpts/OURS data/DexGraspNet2.0-ckpts/CAD
 ```
 
 ### Step 3: Data Processing
@@ -135,17 +140,17 @@ Preprocess depth images to point clouds for network training:
 
 ```bash
 # GraspNet scenes (100-190 dense, 200-380 loose, 9000-9900 random)
-python -m cadgrasp.baseline.preprocess.compute_network_input_all \
+python -m src.cadgrasp.baseline.preprocess.compute_network_input_all \
     --dataset graspnet --scene_id_start 100 --scene_id_end 190
 
-python -m cadgrasp.baseline.preprocess.compute_network_input_all \
+python -m src.cadgrasp.baseline.preprocess.compute_network_input_all \
     --dataset graspnet --scene_id_start 200 --scene_id_end 380
 
-python -m cadgrasp.baseline.preprocess.compute_network_input_all \
+python -m src.cadgrasp.baseline.preprocess.compute_network_input_all \
     --dataset graspnet --scene_id_start 9000 --scene_id_end 9900
 
 # ACRONYM scenes
-python -m cadgrasp.baseline.preprocess.compute_network_input_all --dataset acronym
+python -m src.cadgrasp.baseline.preprocess.compute_network_input_all --dataset acronym
 ```
 
 #### 3.2 Generate IBS Training Data
@@ -175,7 +180,7 @@ cd thirdparty/LASDiffusion
 python train.py \
     --name LEAP_dif \
     --ibs_path ../../data/ibsdata \
-    --scene_pc_path ../../data/DexGraspNet2.0/scenes \
+    --scene_pc_path ../../data/scenes \
     --batch_size 64 \
     --training_epoch 200000
 cd ../..
@@ -188,14 +193,14 @@ Model checkpoints will be saved to `thirdparty/LASDiffusion/results/LEAP_dif/`.
 ```bash
 # Predict on all test scenes (GraspNet + ACRONYM)
 python src/cadgrasp/baseline/eval/predict_dexterous_all_cates.py \
-    --ckpt data/DexGraspNet2.0/DexGraspNet2.0-ckpts/CAD/ckpt/ckpt_50000.pth
+    --ckpt data/DexGraspNet2.0-ckpts/CAD/ckpt/ckpt_50000.pth
 ```
 
 This runs prediction on:
 - GraspNet dense (100-190), loose (200-380), random (9000-9900)
 - ACRONYM dataset
 
-Results saved to `data/DexGraspNet2.0/DexGraspNet2.0-ckpts/CAD/results/`.
+Results saved to `data/DexGraspNet2.0-ckpts/CAD/results/`.
 
 ### Step 6: Run Evaluation
 
@@ -208,7 +213,7 @@ python src/cadgrasp/baseline/eval/evaluate_dexterous_all_cates.py
 
 ```bash
 python src/cadgrasp/baseline/eval/print_dexterous_results.py \
-    --ckpt_path data/DexGraspNet2.0/DexGraspNet2.0-ckpts/CAD/ckpt/ckpt_50000.pth
+    --ckpt_path data/DexGraspNet2.0-ckpts/CAD/ckpt/ckpt_50000.pth
 ```
 
 ---

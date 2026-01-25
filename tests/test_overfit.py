@@ -51,7 +51,7 @@ def get_sample_from_scene(
     # Create dataset for this scene only
     ds = IBS_Dataset(
         path=project_path('data/ibsdata'),
-        scene_path=project_path('data/DexGraspNet2.0/scenes'),
+        scene_path=project_path('data/scenes'),
         ibs_load_per_scene=1,
         split='train',
         use_view_filter=False,
@@ -340,7 +340,7 @@ def main():
     print("="*60)
     
     ibs_file_1 = project_path('data/ibsdata/ibs/scene_0001.npy')
-    network_input_1 = project_path('data/DexGraspNet2.0/scenes/scene_0001/realsense/network_input.npz')
+    network_input_1 = project_path('data/scenes/scene_0001/realsense/network_input.npz')
     
     if os.path.exists(ibs_file_1) and os.path.exists(network_input_1):
         scene_voxel_1, ibs_gt_1, ibs_raw_1 = get_sample_from_scene(1, view_id=0, ibs_idx=0, device=args.device)
@@ -369,7 +369,7 @@ def main():
         print(f"IBS data for scene 1 not found. Generating IBS without GT comparison...")
         
         # Still try to generate IBS for scene 1 using the network_input
-        scene_data = np.load(project_path('data/DexGraspNet2.0/scenes/scene_0001/realsense/network_input.npz'))
+        scene_data = np.load(project_path('data/scenes/scene_0001/realsense/network_input.npz'))
         scene_pc = torch.from_numpy(scene_data['pc'][0]).float()  # view 0
         
         # Use a random hand pose (from scene 0's w2h)

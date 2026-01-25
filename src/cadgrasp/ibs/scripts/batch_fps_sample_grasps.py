@@ -26,7 +26,7 @@ from cadgrasp.paths import project_path
 
 
 def get_scene_ids_with_grasps(
-    grasp_base_path: str = 'data/DexGraspNet2.0/dex_grasps_new',
+    grasp_base_path: str = 'data/dex_grasps_new',
     robot_name: str = 'leap_hand',
     scene_start: int = 0,
     scene_end: int = 10000
@@ -94,13 +94,13 @@ def main():
     parser.add_argument('--scene_end', type=int, default=10000, help='End scene ID (exclusive)')
     parser.add_argument('--robot_name', type=str, default='leap_hand', help='Robot name')
     parser.add_argument('--grasp_path', type=str,
-                        default=project_path('data/DexGraspNet2.0/dex_grasps_new'),
+                        default=project_path('data/dex_grasps_new'),
                         help='Path to original grasp data')
     parser.add_argument('--success_indices_path', type=str,
-                        default=project_path('data/DexGraspNet2.0/dex_grasps_success_indices'),
+                        default=project_path('data/dex_grasps_success_indices'),
                         help='Path to success indices')
     parser.add_argument('--output_path', type=str,
-                        default=project_path('data/DexGraspNet2.0/fps_sampled_indices'),
+                        default=project_path('data/fps_sampled_indices'),
                         help='Path to save FPS indices')
     parser.add_argument('--max_grasps', type=int, default=5000,
                         help='Maximum grasps per scene')

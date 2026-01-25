@@ -25,9 +25,9 @@ from tabulate import tabulate
 from cadgrasp.paths import project_path
 
 # Default paths
-DEFAULT_GRASP_PATH = project_path('data/DexGraspNet2.0/dex_grasps_new')
-DEFAULT_SUCCESS_PATH = project_path('data/DexGraspNet2.0/dex_grasps_success_indices')
-DEFAULT_FPS_PATH = project_path('data/DexGraspNet2.0/fps_sampled_indices')
+DEFAULT_GRASP_PATH = project_path('data/dex_grasps_new')
+DEFAULT_SUCCESS_PATH = project_path('data/dex_grasps_success_indices')
+DEFAULT_FPS_PATH = project_path('data/fps_sampled_indices')
 DEFAULT_IBS_PATH = project_path('data/ibsdata')
 
 
