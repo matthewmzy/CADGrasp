@@ -262,32 +262,14 @@ Interactive tools for editing LEAP Hand self-collision keypoints and palmar surf
 
 ---
 
-## Module Reference
-
-### cadgrasp.baseline
-DexGraspNet 2.0 baseline implementation with graspness prediction and grasp generation.
-
-### cadgrasp.ibs
-IBS (Interaction Bisector Surface) computation from grasp data.
-
-### cadgrasp.optimizer
-Adam-based pose optimization using IBS energy functions.
-
-### cadgrasp.evaluator
-End-to-end evaluation combining LASDiffusion prediction and pose optimization.
-
-### thirdparty.LASDiffusion
-3D voxel diffusion model for IBS prediction from scene point clouds.
-
----
-
 ## Citation
 
 ```bibtex
-@article{cadgrasp2024,
-  title={CADGrasp: Contact and Collision Aware Dexterous Grasping with Interaction Bisector Surface},
-  author={...},
-  year={2024}
+@article{zhang2025cadgrasp,
+  title={CADGrasp: Learning Contact and Collision Aware General Dexterous Grasping in Cluttered Scenes},
+  author={Zhang, Jiyao and Ma, Zhiyuan and Wu, Tianhao and Chen, Zeyuan and Dong, Hao},
+  booktitle={Advances in Neural Information Processing Systems (NeurIPS)},
+  year={2025}
 }
 ```
 
